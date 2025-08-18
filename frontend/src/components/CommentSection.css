@@ -1,0 +1,63 @@
+/* 评论区整体布局 */
+.comment-section {
+    /* 为了让内部元素能基于该容器居中，可设置 text-align，或者用 flex 等方式，这里先演示 text-align 方案 */
+    text-align: center;
+    padding: 20px;
+}
+
+.comment-section .container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* 评论区标题 */
+.comment-title {
+  color: #111827;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  position: relative;
+  display: inline-block;
+  /* 原有下划线样式保留 */
+}
+
+.comment-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 120px;
+  height: 3px;
+  background-color: #3b82f6;
+  border-radius: 3px;
+}
+
+/* 评论区描述 */
+.comment-description {
+  color: #6b7280;
+  font-size: 1.125rem;
+  max-width: 700px;
+  margin: 0 auto; /* 让描述文字在父容器中水平居中 */
+  line-height: 1.6;
+}
+
+/* 确保评论区在不同屏幕尺寸下的响应式表现 */
+@media (max-width: 768px) {
+  .comment-section {
+    padding: 2.5rem 1rem;
+  }
+
+  .comment-title {
+    font-size: 1.5rem;
+  }
+
+  #gitalk-container {
+    padding: 1.5rem !important;
+  }
+}
+
+/* 评论区标题和描述的容器 */
+.comment-header {
+  text-align: center; /* 关键：让内容水平居中 */
+  margin-bottom: 2rem; /* 增加间距 */
+}
