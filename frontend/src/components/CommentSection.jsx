@@ -13,29 +13,45 @@ const CommentSection = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [submitError, setSubmitError] = useState('');
   const initialized = useRef(false);
-  const commentContainerRef = useRef(null);
+  const containerRef = useRef(null); // React管理的容器引用
+  const valineContainerRef = useRef(null); // Valine专用容器
   const valineInstance = useRef(null);
   const observerRef = useRef(null);
-  const isUnmounted = useRef(false); // 跟踪组件是否已卸载
+  const isUnmounted = useRef(false);
 
   // 邮箱和网址验证函数
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidUrl = (url) => !url.trim() || /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/.test(url);
 
+  // 创建独立的Valine容器，完全脱离React管理
   useEffect(() => {
-    // 组件卸载时标记
+    // 创建一个不在React虚拟DOM树中的容器
+    const valineContainer = document.createElement('div');
+    valineContainer.id = 'valine-standalone-container';
+    document.body.appendChild(valineContainer);
+    valineContainerRef.current = valineContainer;
+
+    return () => {
+      // 组件卸载时彻底移除这个容器
+      if (valineContainerRef.current && document.body.contains(valineContainerRef.current)) {
+        document.body.removeChild(valineContainerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // 标记组件卸载状态
     return () => {
       isUnmounted.current = true;
     };
   }, []);
 
   useEffect(() => {
-    if (!commentContainerRef.current || initialized.current) return;
+    if (!containerRef.current || !valineContainerRef.current || initialized.current) return;
     initialized.current = true;
 
     // 初始化评论系统
     const initCommentSystem = (AV, Valine) => {
-      // 检查组件是否已卸载
       if (isUnmounted.current) return;
 
       // 初始化AV
@@ -49,14 +65,12 @@ const CommentSection = () => {
         AV.setServerURLs(LEANCLOUD_CONFIG.serverURLs);
       }
 
-      // 先清空容器，避免重复渲染
-      if (commentContainerRef.current) {
-        commentContainerRef.current.innerHTML = '';
-      }
+      // 清空Valine容器
+      valineContainerRef.current.innerHTML = '';
 
-      // 创建Valine实例
+      // 创建Valine实例，绑定到独立容器
       valineInstance.current = new Valine({
-        el: commentContainerRef.current,
+        el: valineContainerRef.current,
         path: window.location.pathname,
         placeholder: '分享你的想法和建议吧～',
         avatar: 'mp',
@@ -89,11 +103,16 @@ const CommentSection = () => {
         emojiTooltip: true
       });
 
+      // 将Valine容器的内容移动到React容器中显示
+      if (containerRef.current && valineContainerRef.current) {
+        containerRef.current.appendChild(valineContainerRef.current);
+      }
+
       // 绑定提交事件
       const bindSubmitEvent = () => {
-        if (isUnmounted.current || !commentContainerRef.current) return;
+        if (isUnmounted.current || !valineContainerRef.current) return;
 
-        const submitBtn = commentContainerRef.current.querySelector('.vsubmit');
+        const submitBtn = valineContainerRef.current.querySelector('.vsubmit');
         if (submitBtn) {
           submitBtn.onclick = handleSubmit;
         }
@@ -104,12 +123,12 @@ const CommentSection = () => {
         if (isUnmounted.current) return;
 
         setSubmitError('');
-        if (!commentContainerRef.current) return;
+        if (!valineContainerRef.current) return;
 
-        const nick = commentContainerRef.current.querySelector('.vnick')?.value?.trim() || '';
-        const mail = commentContainerRef.current.querySelector('.vmail')?.value?.trim() || '';
-        const link = commentContainerRef.current.querySelector('.vlink')?.value?.trim() || '';
-        const content = commentContainerRef.current.querySelector('.veditor textarea')?.value?.trim() || '';
+        const nick = valineContainerRef.current.querySelector('.vnick')?.value?.trim() || '';
+        const mail = valineContainerRef.current.querySelector('.vmail')?.value?.trim() || '';
+        const link = valineContainerRef.current.querySelector('.vlink')?.value?.trim() || '';
+        const content = valineContainerRef.current.querySelector('.veditor textarea')?.value?.trim() || '';
 
         if (!content) return setSubmitError('请输入评论内容～');
         if (mail && !isValidEmail(mail)) return setSubmitError('请输入有效的邮箱地址');
@@ -123,17 +142,17 @@ const CommentSection = () => {
 
       // 使用MutationObserver监听DOM变化
       const observer = new MutationObserver((mutations) => {
-        if (isUnmounted.current || !commentContainerRef.current) {
+        if (isUnmounted.current || !valineContainerRef.current) {
           observer.disconnect();
           return;
         }
 
-        if (commentContainerRef.current.querySelector('.vsubmit')) {
+        if (valineContainerRef.current.querySelector('.vsubmit')) {
           bindSubmitEvent();
           observer.disconnect();
         }
       });
-      observer.observe(commentContainerRef.current, { childList: true, subtree: true });
+      observer.observe(valineContainerRef.current, { childList: true, subtree: true });
       observerRef.current = observer;
 
       if (!isUnmounted.current) {
@@ -143,7 +162,6 @@ const CommentSection = () => {
 
     // 清理函数 - 关键修复
     const cleanup = () => {
-      // 标记组件已卸载
       isUnmounted.current = true;
 
       // 移除全局事件监听
@@ -167,22 +185,13 @@ const CommentSection = () => {
         valineInstance.current = null;
       }
 
-      // 清理DOM - 关键修复
-      if (commentContainerRef.current) {
-        // 先移除事件监听器
-        const submitBtn = commentContainerRef.current.querySelector('.vsubmit');
-        if (submitBtn) {
-          submitBtn.onclick = null;
-        }
-
-        // 安全清空容器
-        while (commentContainerRef.current.firstChild) {
-          try {
-            commentContainerRef.current.removeChild(commentContainerRef.current.firstChild);
-          } catch (err) {
-            console.warn('移除子节点时出错:', err);
-            break; // 避免无限循环
-          }
+      // 从React容器中移除Valine容器，避免React尝试操作它
+      if (containerRef.current && valineContainerRef.current &&
+          containerRef.current.contains(valineContainerRef.current)) {
+        try {
+          containerRef.current.removeChild(valineContainerRef.current);
+        } catch (err) {
+          console.warn('从React容器移除Valine容器时出错:', err);
         }
       }
     };
@@ -274,9 +283,9 @@ const CommentSection = () => {
       <h3 className="comment-title">评论区</h3>
       <p className="comment-desc">欢迎留下你的宝贵意见</p>
 
-      {/* 使用独立的容器来避免React虚拟DOM冲突 */}
+      {/* React只管理这个容器的存在，不干涉其内部内容 */}
       <div
-        ref={commentContainerRef}
+        ref={containerRef}
         className="comment-content"
         style={{ minHeight: '300px' }}
       >
@@ -313,3 +322,4 @@ const CommentSection = () => {
 };
 
 export default CommentSection;
+    
