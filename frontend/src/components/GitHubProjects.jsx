@@ -9,7 +9,7 @@ const GitHubProjects = () => {
   // 配置信息
   const GITHUB_USERNAME = "dongbiaobiao";
   // 从环境变量获取令牌（推荐）或直接填入（不推荐公开代码）
-  const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN ; // 替换为你的令牌
+  const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN; // 替换为你的令牌
 
   // CORS代理列表
   const CORS_PROXIES = [
