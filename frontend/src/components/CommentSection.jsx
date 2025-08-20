@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import './CommentSection.css';
 
 const CommentSection = () => {
@@ -14,7 +13,7 @@ const CommentSection = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [submitError, setSubmitError] = useState('');
   const initialized = useRef(false);
-  const containerRef = useRef(null); // Portal容器引用
+  const commentContainerRef = useRef(null);
   const valineInstance = useRef(null);
   const observerRef = useRef(null);
 
@@ -22,24 +21,8 @@ const CommentSection = () => {
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidUrl = (url) => !url.trim() || /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/.test(url);
 
-  // 创建独立的DOM容器，避免干扰React的DOM树
   useEffect(() => {
-    // 创建一个不在React根节点下的容器
-    const container = document.createElement('div');
-    container.id = 'valine-portal-container';
-    document.body.appendChild(container); // 添加到body而非React管理的节点
-    containerRef.current = container;
-
-    // 组件卸载时清理容器
-    return () => {
-      if (containerRef.current && document.body.contains(containerRef.current)) {
-        document.body.removeChild(containerRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!containerRef.current || initialized.current) return;
+    if (!commentContainerRef.current || initialized.current) return;
     initialized.current = true;
 
     // 初始化评论系统
@@ -55,9 +38,9 @@ const CommentSection = () => {
         AV.setServerURLs(LEANCLOUD_CONFIG.serverURLs);
       }
 
-      // 创建Valine实例，绑定到portal容器
+      // 创建Valine实例（修复表情配置）
       valineInstance.current = new Valine({
-        el: containerRef.current, // 使用独立容器
+        el: commentContainerRef.current,
         path: window.location.pathname,
         placeholder: '分享你的想法和建议吧～',
         avatar: 'mp',
@@ -66,12 +49,34 @@ const CommentSection = () => {
         enableQQ: true,
         appId: LEANCLOUD_CONFIG.appId,
         appKey: LEANCLOUD_CONFIG.appKey,
-        serverURLs: LEANCLOUD_CONFIG.serverURLs
+        serverURLs: LEANCLOUD_CONFIG.serverURLs,
+        // 修复表情配置 - 使用完整有效的表情映射
+        emojiCDN: "https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/emojis/",
+        emojiMaps: {
+          "smile": "smile.png",
+          "laugh": "laugh.png",
+          "sad": "sad.png",
+          "angry": "angry.png",
+          "surprise": "surprise.png",
+          "cry": "cry.png",
+          "smiley": "smiley.png",
+          "grin": "grin.png",
+          "blush": "blush.png",
+          "wink": "wink.png",
+          "heart": "heart.png",
+          "thumbsup": "thumbsup.png",
+          "tada": "tada.png",
+          "confused": "confused.png",
+          "question": "question.png",
+          "ok_hand": "ok_hand.png"
+        },
+        // 新增：确保表情面板正常显示
+        emojiTooltip: true
       });
 
       // 绑定提交事件
       const bindSubmitEvent = () => {
-        const submitBtn = containerRef.current.querySelector('.vsubmit');
+        const submitBtn = commentContainerRef.current.querySelector('.vsubmit');
         if (submitBtn) {
           submitBtn.onclick = handleSubmit;
         }
@@ -80,10 +85,10 @@ const CommentSection = () => {
       // 处理提交逻辑
       const handleSubmit = () => {
         setSubmitError('');
-        const nick = containerRef.current.querySelector('.vnick')?.value?.trim() || '';
-        const mail = containerRef.current.querySelector('.vmail')?.value?.trim() || '';
-        const link = containerRef.current.querySelector('.vlink')?.value?.trim() || '';
-        const content = containerRef.current.querySelector('.veditor textarea')?.value?.trim() || '';
+        const nick = commentContainerRef.current.querySelector('.vnick')?.value?.trim() || '';
+        const mail = commentContainerRef.current.querySelector('.vmail')?.value?.trim() || '';
+        const link = commentContainerRef.current.querySelector('.vlink')?.value?.trim() || '';
+        const content = commentContainerRef.current.querySelector('.veditor textarea')?.value?.trim() || '';
 
         if (!content) return setSubmitError('请输入评论内容～');
         if (mail && !isValidEmail(mail)) return setSubmitError('请输入有效的邮箱地址');
@@ -97,12 +102,12 @@ const CommentSection = () => {
 
       // 使用MutationObserver监听DOM变化
       const observer = new MutationObserver((mutations) => {
-        if (containerRef.current.querySelector('.vsubmit')) {
+        if (commentContainerRef.current.querySelector('.vsubmit')) {
           bindSubmitEvent();
           observer.disconnect();
         }
       });
-      observer.observe(containerRef.current, { childList: true, subtree: true });
+      observer.observe(commentContainerRef.current, { childList: true, subtree: true });
       observerRef.current = observer;
 
       setIsLoading(false);
@@ -112,12 +117,10 @@ const CommentSection = () => {
     const cleanup = () => {
       window.removeEventListener('error', handleGlobalError);
 
-      // 断开观察者
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
 
-      // 销毁Valine实例
       if (valineInstance.current && typeof valineInstance.current.destroy === 'function') {
         valineInstance.current.destroy();
       }
@@ -185,14 +188,16 @@ const CommentSection = () => {
 
   const handleRetry = () => window.location.reload(true);
 
-  // 通过Portal将评论区渲染到独立容器，但在视觉上保持原位
   return (
     <div className="comment-section">
       <h3 className="comment-title">评论区</h3>
       <p className="comment-desc">欢迎留下你的宝贵意见</p>
 
-      {/* 占位元素，保持布局位置 */}
-      <div className="comment-placeholder" style={{ minHeight: '300px' }}>
+      <div
+        ref={commentContainerRef}
+        className="comment-content"
+        style={{ minHeight: '300px' }}
+      >
         {isLoading && (
           <div className="loading-state">
             <div className="spinner"></div>
@@ -201,13 +206,13 @@ const CommentSection = () => {
         )}
 
         {submitError && (
-          <div className="submit-error" style={{ color: '#d9534f', padding: '8px', marginBottom: '10px' }}>
+          <div className="submit-error alert alert-error">
             ⚠️ {submitError}
           </div>
         )}
 
         {errorMsg && (
-          <div className="error-state">
+          <div className="error-state alert alert-fatal">
             <p>评论系统加载失败：{errorMsg}</p>
             <div className="error-guide">
               <p>排查建议：</p>
@@ -217,21 +222,16 @@ const CommentSection = () => {
                 <li>3. 刷新页面重试</li>
               </ul>
             </div>
-            <button className="retry-btn" onClick={handleRetry}>重试</button>
+            <button className="retry-btn btn-retry" onClick={handleRetry}>重试</button>
           </div>
         )}
-      </div>
 
-      {/* 使用Portal将Valine渲染到独立DOM节点 */}
-      {containerRef.current && !errorMsg && (
-        createPortal(
-          <div id="valine-comment" style={{ display: isLoading ? 'none' : 'block' }} />,
-          containerRef.current
-        )
-      )}
+        {!isLoading && !errorMsg && (
+          <div id="valine-comment" />
+        )}
+      </div>
     </div>
   );
 };
 
 export default CommentSection;
-    
