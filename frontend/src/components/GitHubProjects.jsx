@@ -8,59 +8,32 @@ const GitHubProjects = () => {
 
   // 配置信息
   const GITHUB_USERNAME = "dongbiaobiao";
-  // 从环境变量获取令牌（推荐）或直接填入（不推荐公开代码）
-  const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN; // 替换为你的令牌
+  // 从环境变量获取令牌
+  const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
 
-  // CORS代理列表
-  const CORS_PROXIES = [
-    "https://proxy.cors.sh/"
-  ];
-  const [currentProxyIndex, setCurrentProxyIndex] = useState(0);
-
-  // 获取项目数据
+  // 获取项目数据（移除代理相关逻辑）
   const fetchRepos = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       setDebugInfo('开始请求GitHub API...');
 
-      // 构建基础API URL
+      // 直接使用GitHub API原始地址
       const apiUrl = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&direction=desc&per_page=10`;
 
-      // 处理不同代理的URL格式
-      let proxiedUrl;
-      if (CORS_PROXIES[currentProxyIndex].includes('allorigins')) {
-        proxiedUrl = `${CORS_PROXIES[currentProxyIndex]}${encodeURIComponent(apiUrl)}`;
-      } else {
-        proxiedUrl = `${CORS_PROXIES[currentProxyIndex]}${apiUrl}`;
-      }
+      setDebugInfo(`直接请求API: ${apiUrl}`);
 
-      setDebugInfo(`使用代理: ${CORS_PROXIES[currentProxyIndex]} 发送请求...`);
-
-      // 构建请求头
+      // 构建请求头（必须包含令牌）
       const headers = {
         'Accept': 'application/vnd.github.v3+json',
-        'Origin': window.location.origin
+        'Authorization': `token ${GITHUB_TOKEN}` // 强制使用令牌避免429
       };
 
-      // 如果有令牌，添加到请求头（提高API限制）
-      if (GITHUB_TOKEN) {
-        headers['Authorization'] = `token ${GITHUB_TOKEN}`;
-        setDebugInfo(prev => prev + '（使用访问令牌）');
-      }
-
-      const response = await Promise.race([
-        fetch(proxiedUrl, {
-          method: 'GET',
-          headers: headers,
-          mode: 'cors',
-          cache: 'no-cache'
-        }),
-        // 10秒超时处理
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('请求超时')), 10000)
-        )
-      ]);
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: headers,
+        cache: 'no-cache'
+      });
 
       setDebugInfo(`API响应状态: ${response.status} ${response.statusText}`);
 
@@ -77,15 +50,7 @@ const GitHubProjects = () => {
         }
       }
 
-      // 处理不同代理的响应格式
-      let data;
-      if (CORS_PROXIES[currentProxyIndex].includes('allorigins')) {
-        const responseData = await response.json();
-        data = JSON.parse(responseData.contents);
-      } else {
-        data = await response.json();
-      }
-
+      const data = await response.json();
       setDebugInfo(`成功获取 ${data.length} 个项目`);
       setRepos(data);
     } catch (err) {
@@ -95,7 +60,7 @@ const GitHubProjects = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentProxyIndex]);
+  }, [GITHUB_USERNAME, GITHUB_TOKEN]); // 更新依赖项
 
   // 初始加载
   useEffect(() => {
@@ -107,13 +72,7 @@ const GitHubProjects = () => {
     fetchRepos();
   };
 
-  // 切换到下一个代理
-  const tryNextProxy = () => {
-    setCurrentProxyIndex(prev => (prev + 1) % CORS_PROXIES.length);
-    setDebugInfo(`切换到代理 ${CORS_PROXIES[(currentProxyIndex + 1) % CORS_PROXIES.length]}`);
-  };
-
-  // 备用静态项目列表
+  // 备用静态项目列表（保持不变）
   const showFallbackProjects = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -183,7 +142,7 @@ const GitHubProjects = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-6 text-gray-800">GitHub 项目</h2>
         <span className="block w-12 h-2 bg-indigo-600 rounded mx-auto mt-5 mb-10"></span>
 
-        {/* 错误提示和操作按钮 */}
+        {/* 错误提示和操作按钮（移除切换代理按钮） */}
         {error && (
           <div className="text-center mb-6 p-4 bg-red-50 border border-red-100 rounded-lg">
             <p className="text-red-500 mb-2">{error}</p>
@@ -194,12 +153,6 @@ const GitHubProjects = () => {
                 className="px-4 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm transition-colors"
               >
                 <i className="fa fa-refresh mr-1"></i>重试
-              </button>
-              <button
-                onClick={tryNextProxy}
-                className="px-4 py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm transition-colors"
-              >
-                <i className="fa fa-random mr-1"></i>切换代理
               </button>
               {!GITHUB_TOKEN && (
                 <button
@@ -217,7 +170,7 @@ const GitHubProjects = () => {
           我的开源项目和代码仓库，欢迎Star和Fork
         </p>
 
-        {/* 项目列表展示 */}
+        {/* 项目列表展示（保持不变） */}
         {repos.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {repos.map((repo) => (

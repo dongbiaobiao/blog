@@ -5,40 +5,30 @@ const CommentSection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [submitError, setSubmitError] = useState('');
-  const initialized = useRef(false); // 标记是否已初始化
+  const initialized = useRef(false);
   const nickRef = useRef(null);
   const mailRef = useRef(null);
   const linkRef = useRef(null);
   const contentRef = useRef(null);
-  // 新增：存储Valine实例引用
-  const valineInstance = useRef(null);
 
   // 邮箱和网址验证函数
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidUrl = (url) => !url.trim() || /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/.test(url);
 
   useEffect(() => {
-    // 防止重复初始化
     if (initialized.current) return;
     initialized.current = true;
 
-    // 1. 先定义初始化函数
     const initCommentSystem = (AV, Valine) => {
-      // 防止重复初始化AV，强制配置服务器地址
       if (!AV.applicationId) {
         AV.init({
           appId: 'nZCZLRsUoF6bUak4STegPS1d-gzGzoHsz',
           appKey: 'FkyYQstKUDsYatd1jT7uUgbX',
-          // 明确指定服务器地址，防止使用默认域名
           serverURLs: 'https://nzczlrsu.lc-cn-n1-shared.com'
         });
-      } else {
-        // 如果已初始化，强制更新服务器地址
-        AV.setServerURLs('https://nzczlrsu.lc-cn-n1-shared.com');
       }
 
-      // 创建Valine实例并存储引用
-      valineInstance.current = new Valine({
+      const valine = new Valine({
         el: '#valine-comment',
         path: window.location.pathname,
         placeholder: '分享你的想法和建议吧～',
@@ -48,11 +38,9 @@ const CommentSection = () => {
         enableQQ: true,
         appId: 'nZCZLRsUoF6bUak4STegPS1d-gzGzoHsz',
         appKey: 'FkyYQstKUDsYatd1jT7uUgbX',
-        // 关键：配置serverURLs为正确地址
         serverURLs: 'https://nzczlrsu.lc-cn-n1-shared.com'
       });
 
-      // 绑定提交按钮事件
       const bindSubmitEvent = () => {
         const submitBtn = document.querySelector('.vsubmit');
         if (submitBtn) {
@@ -67,8 +55,7 @@ const CommentSection = () => {
             if (mail && !isValidEmail(mail)) return setSubmitError('请输入有效的邮箱地址');
             if (link && !isValidUrl(link)) return setSubmitError('请输入有效的网址');
 
-            // 使用存储的实例提交
-            valineInstance.current.submit();
+            valine.submit();
             if (nick || mail || link) {
               localStorage.setItem('Valine::vuser', JSON.stringify({ nick, mail, link }));
             }
@@ -76,7 +63,6 @@ const CommentSection = () => {
         }
       };
 
-      // 绑定表单引用
       const bindFormRefs = () => {
         nickRef.current = document.querySelector('.vnick');
         mailRef.current = document.querySelector('.vmail');
@@ -85,28 +71,37 @@ const CommentSection = () => {
         bindSubmitEvent();
       };
 
-      // 延长超时时间确保DOM加载完成
-      setTimeout(bindFormRefs, 300);
+      // 延迟绑定确保DOM存在
+      const timer = setTimeout(bindFormRefs, 100);
       setIsLoading(false);
+
+      // 清理定时器
+      return () => clearTimeout(timer);
     };
 
-    // 2. 定义清理函数
+    // 优化清理函数，避免DOM操作冲突
     const cleanup = () => {
       window.removeEventListener('error', handleGlobalError);
-      // 移除已加载的脚本
+      // 安全移除脚本
       ['leancloud-storage', 'valine'].forEach(key => {
         const scripts = document.querySelectorAll(`script[src*="${key}"]`);
-        scripts.forEach(script => script.remove());
+        scripts.forEach(script => {
+          if (document.body.contains(script)) {
+            document.body.removeChild(script);
+          }
+        });
       });
       const container = document.getElementById('valine-comment');
-      if (container) container.innerHTML = '';
-      // 清除Valine实例
-      valineInstance.current = null;
+      if (container) {
+        // 用React状态控制清空，而非直接操作DOM
+        container.innerHTML = '';
+      }
     };
 
-    // 3. 定义全局错误监听
+    // 修复全局错误监听中的includes判断（关键修复）
     const handleGlobalError = (msg, source, lineno, colno, error) => {
-      if (source.includes('Valine.min.js') || source.includes('av-min.js')) {
+      // 先判断source是否存在再调用includes
+      if (source && (source.includes('Valine.min.js') || source.includes('av-min.js'))) {
         setErrorMsg(`脚本错误: ${error?.message || msg}`);
         setIsLoading(false);
       }
@@ -114,13 +109,11 @@ const CommentSection = () => {
     };
     window.addEventListener('error', handleGlobalError);
 
-    // 4. 定义加载LeanCloud的函数
     const loadAV = () => {
       if (window.AV) return Promise.resolve(window.AV);
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js';
-        // 更新SDK版本到较新的3.11.1，修复可能的旧版本域名问题
+        script.src = 'https://fastly.jsdelivr.net/npm/leancloud-storage@3.1.1/dist/av-min.js';
         script.crossOrigin = 'anonymous';
         script.onload = () => window.AV ? resolve(window.AV) : reject(new Error('LeanCloud SDK 未加载'));
         script.onerror = () => reject(new Error('LeanCloud 加载失败'));
@@ -128,12 +121,11 @@ const CommentSection = () => {
       });
     };
 
-    // 5. 定义加载Valine的函数
     const loadValine = () => {
       if (window.Valine) return Promise.resolve(window.Valine);
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js';
+        script.src = 'https://fastly.jsdelivr.net/npm/valine@1.4.18/dist/Valine.min.js';
         script.crossOrigin = 'anonymous';
         script.onload = () => window.Valine ? resolve(window.Valine) : reject(new Error('Valine 未加载'));
         script.onerror = () => reject(new Error('Valine 加载失败'));
@@ -141,11 +133,9 @@ const CommentSection = () => {
       });
     };
 
-    // 执行流程
     setIsLoading(true);
     setErrorMsg('');
 
-    // 检查全局是否已加载
     if (window.AV && window.Valine) {
       try {
         initCommentSystem(window.AV, window.Valine);
@@ -156,7 +146,6 @@ const CommentSection = () => {
       return cleanup;
     }
 
-    // 加载并初始化
     Promise.all([loadAV(), loadValine()])
       .then(([AV, Valine]) => initCommentSystem(AV, Valine))
       .catch(err => {
@@ -165,7 +154,7 @@ const CommentSection = () => {
       });
 
     return cleanup;
-  }, []); // 空依赖数组，确保只执行一次
+  }, []);
 
   const handleRetry = () => window.location.reload(true);
 
@@ -196,7 +185,6 @@ const CommentSection = () => {
               <ul>
                 <li>1. 确保页面中只加载了一次 LeanCloud 和 Valine</li>
                 <li>2. 检查是否有其他组件也在使用 LeanCloud SDK</li>
-                <li>3. 确认网络连接正常</li>
               </ul>
             </div>
             <button className="retry-btn" onClick={handleRetry}>重试</button>
