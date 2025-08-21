@@ -243,14 +243,56 @@
   border-color: #3b82f6;
 }
 
+/* 👇 表情样式优化（新增/修改部分） */
 #valine-comment .vemoji-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  margin-right: 0.5rem;
+  border-radius: 4px;
+  background: #f1f5f9;
+  cursor: pointer;
   color: #666;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 #valine-comment .vemoji-btn:hover {
   color: #3b82f6;
+  background: #e2e8f0;
 }
+
+/* 表情选择面板样式 */
+#valine-comment .vemojis {
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: white;
+  z-index: 100;
+}
+
+#valine-comment .vemoji {
+  width: 28px;
+  height: 28px;
+  margin: 0.2rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 4px;
+}
+
+#valine-comment .vemoji:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 评论内容中的表情显示优化 */
+#valine-comment .vcontent img[src*="twemoji"] {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0 0.1em;
+  vertical-align: text-bottom;
+}
+/* 👆 表情样式优化结束 */
 
 /* 响应式调整 */
 @media (max-width: 768px) {
@@ -267,5 +309,3 @@
     padding: 1rem;
   }
 }
-
-

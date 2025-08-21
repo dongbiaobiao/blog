@@ -318,6 +318,9 @@ const Resume = () => {
                 </div>
               </div>
             </div>
+
+
+
             {/* 竞赛经历 */}
             <div className="section-animate">
               <h3 className="text-2xl font-bold mb-6 flex items-center group">
@@ -370,61 +373,112 @@ const Resume = () => {
                         </li>
                     </ul>
                 </div>
+              </div>
+            </div>
 
-                {/* 网易实习 */}
-                <div className="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-all border-l-4 border-green-500">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                    <h4 className="text-xl font-bold text-gray-800">网易（杭州）网络有限公司</h4>
-                    <span className="text-primary font-medium mt-2 md:mt-0">2024.10 - 2025.03</span>
-                  </div>
-
-                  <p className="text-gray-600 mb-5 flex items-center">
-                    <i className="fa fa-building-o mr-2 opacity-70"></i>
-                    机器人算法实习生
-                  </p>
-
-                  <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <p className="font-semibold text-gray-800 mb-2">项目名称：智能交通多智能体协同仿真与轨迹预测系统开发</p>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      项目背景：本项目基于V2V通信技术，通过轨迹预测与智能提醒，提供对有人车的预警和无人车的智能避障。系统实时交换车辆数据，预测轨迹并评估碰撞风险，从而为有人车提供预警，对无人车进行智能避障，确保交通安全与效率。
-                    </p>
-                  </div>
-
-                  <li className="flex items-start flex-wrap">
-                    <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
-                    <div className="flex-1">
-                      <span className="font-semibold text-gray-800">仿真平台搭建：</span>
-                      <span>基于 Carla 平台构建含十字路口、三岔路口、环岛的混合交通系统，支持行人、摩托车、汽车等参与者及 GNSS、IMU 传感器，实现多智能体协同交通流仿真。</span>
+            {/* 项目经历 */}
+            <div className="section-animate">
+              <h3 className="text-2xl font-bold mb-6 flex items-center group">
+                <i className="fa fa-briefcase text-indigo-600 mr-3 group-hover:rotate-6 transition-transform"></i>
+                项目经历
+              </h3>
+              <div className="space-y-6">
+                {/* 移动机器人在复杂动态环境中的路径规划优化(研究生课题) */}
+                <div className="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-all border-l-4 border-blue-500">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                        <h4 className="text-xl font-bold text-gray-800">移动机器人在复杂动态环境中的路径规划优化(研究生课题)</h4>
+                        <span className="text-primary font-medium mt-2 md:mt-0">2022.09 - 2025.06</span>
                     </div>
-                  </li>
 
-                  <li className="flex items-start flex-wrap">
-                    <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
-                    <div className="flex-1">
-                      <span className="font-semibold text-gray-800">基于阿克曼模型的改进EKF算法：</span>
-                      <span>融合阿克曼模型与改进 EKF 算法，以前轮转角 (±0.5°) 和车速为输入，通过运动学方程完成位姿估计；在 Carla 中 1s 内横向 FDE 达 0.4m（较原模型降 43.5%），单帧处理仅 10.2ms。</span>
-                    </div>
-                  </li>
+                    {/*<p className="text-gray-600 mb-5 flex items-center">*/}
+                    {/*    <i className="fa fa-building-o mr-2 opacity-70"></i>*/}
+                    {/*    百度Apollo城市道路自动驾驶*/}
+                    {/*</p>*/}
 
-                  <li className="flex items-start flex-wrap">
-                    <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
-                    <div className="flex-1">
-                      <span className="font-semibold text-gray-800">基于MANTRA模型的多模态轨迹预测系统：</span>
-                      <span>采用 MANTRA 模型结合地图信息实现多模态轨迹预测：自建数据集（含十字路口等场景）中 4s 内 FDE≤2.0m，部署 Carla 后端到端推理耗时 80ms，支持复杂场景实时预测。</span>
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <span className="font-semibold text-gray-800 mb-2 text-base">项目背景:</span>
+                        <span className="text-base text-gray-600 leading-relaxed">
+                            该项目旨在通过优化全局与局部路径规划算法，提升移动机器人在复杂动态环境中的导航性能，确保其实时灵活应对环境变化，准确避开障碍物并顺利到达目的地。
+                        </span>
                     </div>
-                  </li>
 
-                  <li className="flex items-start flex-wrap">
-                    <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
-                    <div className="flex-1">
-                      <span className="font-semibold text-gray-800">数据采集与系统接口标准化：</span>
-                      <span>构建含十字路口、三岔路口、环岛的交通数据集（超 60 万条轨迹），实现轨迹预测算法与 Carla 解耦，提供真实环境部署接口。</span>
+                    <ul className="space-y-3 text-gray-700">
+                        <li className="flex items-start flex-wrap">
+                          <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
+                          <div className="flex-1">
+                            <span className="font-semibold text-gray-800">全局与局部路径规划算法优化：</span>
+                            <span>对全局路径规划算法(A*)与局部路径规划算法(DWA)进行优化。</span>
+                          </div>
+                        </li>
+
+                        <li className="flex items-start flex-wrap">
+                          <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
+                          <div className="flex-1">
+                            <span className="font-semibold text-gray-800">仿真测试与实车验证：</span>
+                            <span>使用ROS与Matlab进行仿真测试，并在真实环境中进行实车测试。</span>
+                          </div>
+                        </li>
+
+                        <li className="flex items-start flex-wrap">
+                          <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
+                          <div className="flex-1">
+                            <span className="font-semibold text-gray-800">技术文档与研究报告撰写：</span>
+                            <span>撰写技术文档和研究报告，记录算法优化过程、测试结果及测试文档。</span>
+                          </div>
+                        </li>
+                    </ul>
+                </div>
+
+                {/* 库存管理系统 */}
+                <div className="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-all border-l-4 border-blue-500">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                        <h4 className="text-xl font-bold text-gray-800">库存管理系统</h4>
+                        <span className="text-primary font-medium mt-2 md:mt-0">2022.09 - 2025.06</span>
                     </div>
-                  </li>
+
+                    {/*<p className="text-gray-600 mb-5 flex items-center">*/}
+                    {/*    <i className="fa fa-building-o mr-2 opacity-70"></i>*/}
+                    {/*    百度Apollo城市道路自动驾驶*/}
+                    {/*</p>*/}
+
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <span className="font-semibold text-gray-800 mb-2 text-base">项目背景:</span>
+                        <span className="text-base text-gray-600 leading-relaxed">
+                            该项目旨在通过优化全局与局部路径规划算法，提升移动机器人在复杂动态环境中的导航性能，确保其实时灵活应对环境变化，准确避开障碍物并顺利到达目的地。
+                        </span>
+                    </div>
+
+                    <ul className="space-y-3 text-gray-700">
+                        <li className="flex items-start flex-wrap">
+                          <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
+                          <div className="flex-1">
+                            <span className="font-semibold text-gray-800">全局与局部路径规划算法优化：</span>
+                            <span>对全局路径规划算法(A*)与局部路径规划算法(DWA)进行优化。</span>
+                          </div>
+                        </li>
+
+                        <li className="flex items-start flex-wrap">
+                          <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
+                          <div className="flex-1">
+                            <span className="font-semibold text-gray-800">仿真测试与实车验证：</span>
+                            <span>使用ROS与Matlab进行仿真测试，并在真实环境中进行实车测试。</span>
+                          </div>
+                        </li>
+
+                        <li className="flex items-start flex-wrap">
+                          <span className="text-primary mr-2 mt-1"><i className="fa fa-check-circle-o"></i></span>
+                          <div className="flex-1">
+                            <span className="font-semibold text-gray-800">技术文档与研究报告撰写：</span>
+                            <span>撰写技术文档和研究报告，记录算法优化过程、测试结果及测试文档。</span>
+                          </div>
+                        </li>
+                    </ul>
                 </div>
 
               </div>
             </div>
+
+
 
 
           </div>

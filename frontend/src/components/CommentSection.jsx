@@ -80,27 +80,49 @@ const CommentSection = () => {
         appId: LEANCLOUD_CONFIG.appId,
         appKey: LEANCLOUD_CONFIG.appKey,
         serverURLs: LEANCLOUD_CONFIG.serverURLs,
-        // 表情配置
-        emojiCDN: "https://cdn.jsdelivr.net/npm/valine@1.4.18/dist/emojis/",
+        // 👇 表情配置修改部分
+        emojiCDN: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/',
         emojiMaps: {
-          "smile": "smile.png",
-          "laugh": "laugh.png",
-          "sad": "sad.png",
-          "angry": "angry.png",
-          "surprise": "surprise.png",
-          "cry": "cry.png",
-          "smiley": "smiley.png",
-          "grin": "grin.png",
-          "blush": "blush.png",
-          "wink": "wink.png",
-          "heart": "heart.png",
-          "thumbsup": "thumbsup.png",
-          "tada": "tada.png",
-          "confused": "confused.png",
-          "question": "question.png",
-          "ok_hand": "ok_hand.png"
+          'smile': '1f604.svg',       // 😄
+          'laugh': '1f606.svg',       // 😆
+          'sad': '1f622.svg',         // 😢
+          'angry': '1f621.svg',       // 😡
+          'surprise': '1f62f.svg',    // 😯
+          'cry': '1f62d.svg',         // 😭
+          'smiley': '1f603.svg',      // 😃
+          'grin': '1f601.svg',        // 😁
+          'blush': '1f60a.svg',       // 😊
+          'wink': '1f609.svg',        // 😉
+          'heart': '2764.svg',        // ❤️
+          'thumbsup': '1f44d.svg',    // 👍
+          'tada': '1f389.svg',        // 🎉
+          'confused': '1f615.svg',    // 😕
+          'question': '2753.svg',     // ❓
+          'ok_hand': '1f44c.svg'      // 👌
         },
         emojiTooltip: true
+        // 👆 表情配置修改结束
+      });
+
+      // 添加Twemoji加载和渲染代码
+      const loadTwemoji = () => {
+        if (window.twemoji) return Promise.resolve();
+        return new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js';
+          script.onload = () => resolve();
+          document.body.appendChild(script);
+        });
+      };
+
+      // 加载Twemoji后渲染表情
+      loadTwemoji().then(() => {
+        if (window.twemoji) {
+          window.twemoji.parse(valineContainerRef.current, {
+            folder: 'svg',
+            ext: '.svg'
+          });
+        }
       });
 
       // 将Valine容器的内容移动到React容器中显示
@@ -322,4 +344,3 @@ const CommentSection = () => {
 };
 
 export default CommentSection;
-    
