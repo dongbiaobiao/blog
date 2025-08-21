@@ -15,6 +15,9 @@ import FuturePlan from './components/FuturePlan';
 import GitHubProjects from './components/GitHubProjects';
 import CommentSection from './components/CommentSection';
 
+
+
+
 const AppContent = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();

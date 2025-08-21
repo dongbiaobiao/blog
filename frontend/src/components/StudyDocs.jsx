@@ -1,70 +1,54 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Chart from 'chart.js/auto';
 import { Link, useLocation } from 'react-router-dom';
+// 从JSON文件导入初始文档数据
+import initialDocs from './Docs/json/docs.json';
 
-// 文档数据数组 - 导出供其他组件使用
-export const docs = [
-  {
-    id: 1,
-    title: 'React 组件生命周期详解',
-    category: 'frontend',
-    date: '2023-06-18',
-    lastUpdated: '2023-06-18',
-    color: 'bg-blue-500',
-    tags: ['React', '前端', '组件'],
-    link: '/docs/react-lifecycle',
-    image: 'https://picsum.photos/seed/react-lifecycle/600/300',
-    description: '详细讲解React组件的生命周期方法，包括挂载、更新和卸载三个阶段。'
-  },
-  {
-    id: 2,
-    title: 'MySQL 索引优化步骤',
-    category: 'database',
-    date: '2023-06-10',
-    lastUpdated: '2023-06-12',
-    color: 'bg-yellow-500',
-    tags: ['MySQL', '数据库', '优化'],
-    link: '/docs/mysql-index-optimization',
-    image: 'https://picsum.photos/seed/mysql-index/600/300',
-    description: '通过实际案例介绍MySQL索引的工作原理及优化技巧。'
-  },
-  {
-    id: 3,
-    title: 'Node.js 中间件开发指南',
-    category: 'backend',
-    date: '2023-05-28',
-    lastUpdated: '2023-06-01',
-    color: 'bg-green-500',
-    tags: ['Node.js', 'Express', '后端'],
-    link: '/docs/nodejs-middleware',
-    image: 'https://picsum.photos/seed/node-middleware/600/300',
-    description: '深入探讨Node.js中间件的设计模式和实现原理。'
-  },
-  {
-    id: 4,
-    title: 'Python 数据分析入门',
-    category: 'ai',
-    date: '2023-05-15',
-    lastUpdated: '2023-05-20',
-    color: 'bg-purple-500',
-    tags: ['Python', '数据分析', 'AI'],
-    link: '/docs/python-data-analysis',
-    image: 'https://picsum.photos/seed/python-data/600/300',
-    description: '从零开始学习使用Python进行数据分析。'
-  },
-  {
-    id: 5,
-    title: 'CSS Flexbox 布局全解析',
-    category: 'frontend',
-    date: '2023-05-10',
-    lastUpdated: '2023-05-10',
-    color: 'bg-blue-500',
-    tags: ['CSS', '布局', '前端'],
-    link: '/docs/css-flexbox',
-    image: 'https://picsum.photos/seed/css-flexbox/600/300',
-    description: '全面解析CSS Flexbox布局模型及实例演示。'
+// 工具函数：获取当前日期（YYYY-MM-DD格式）
+const getCurrentDate = () => {
+  const date = new Date();
+  return date.toISOString().split('T')[0];
+};
+
+// 基于JSON导入的数据初始化docs数组，导出供其他组件使用
+export let docs = [...initialDocs];
+
+// 导出更新文档的函数，供其他组件使用
+export const updateDoc = (docId, updates) => {
+  const index = docs.findIndex(doc => doc.id === docId);
+  if (index !== -1) {
+    // 如果是新文档（没有date），设置创建时间
+    const isNewDoc = !docs[index].date;
+    if (isNewDoc) {
+      updates.date = getCurrentDate();
+    }
+
+    // 无论是否新文档，都更新最后修改时间
+    updates.lastUpdated = getCurrentDate();
+
+    // 创建新数组而非直接修改原数组，确保引用变化
+    docs = [
+      ...docs.slice(0, index),
+      { ...docs[index], ...updates },
+      ...docs.slice(index + 1)
+    ];
+    return docs[index];
   }
-];
+  return null;
+};
+
+// 导出添加新文档的函数
+export const addNewDoc = (newDocData) => {
+  const newId = Math.max(...docs.map(doc => doc.id), 0) + 1;
+  const newDoc = {
+    id: newId,
+    date: getCurrentDate(),
+    lastUpdated: getCurrentDate(),
+    ...newDocData
+  };
+  docs = [...docs, newDoc];
+  return newDoc;
+};
 
 const StudyDocs = () => {
   // 状态管理
@@ -74,9 +58,15 @@ const StudyDocs = () => {
     location.state?.activeCategory || 'all'
   );
   const [userInitiatedChange, setUserInitiatedChange] = useState(false);
+  const [documentList, setDocumentList] = useState(docs); // 本地状态管理文档列表
   const chartRef = useRef(null);
   const sectionRef = useRef(null);
   const docsListRef = useRef(null);
+
+  // 当原始docs数组变化时更新本地状态
+  useEffect(() => {
+    setDocumentList([...docs]);
+  }, [docs]);
 
   // 文档分类
   const categories = [
@@ -89,8 +79,8 @@ const StudyDocs = () => {
 
   // 筛选文档
   const filteredDocs = activeCategory === 'all'
-    ? docs
-    : docs.filter(doc => doc.category === activeCategory);
+    ? documentList
+    : documentList.filter(doc => doc.category === activeCategory);
 
   // 滚动到文档列表区域的函数
   const scrollToDocsList = () => {
@@ -143,7 +133,7 @@ const StudyDocs = () => {
         chartRef.current.destroy();
       }
     };
-  }, [docs]);
+  }, [documentList]);
 
   // 初始化统计图表
   const initStatsChart = () => {
@@ -154,7 +144,7 @@ const StudyDocs = () => {
       .filter(cat => cat.id !== 'all')
       .map(cat => ({
         ...cat,
-        count: docs.filter(doc => doc.category === cat.id).length
+        count: documentList.filter(doc => doc.category === cat.id).length
       }));
 
     if (chartRef.current) {
@@ -223,11 +213,16 @@ const StudyDocs = () => {
                       <span className={`px-2 py-0.5 rounded-full text-xs ${
                         activeCategory === category.id ? 'bg-white/20' : 'bg-gray-200'
                       }`}>
-                        {docs.filter(doc => doc.category === category.id || (category.id === 'all')).length}
+                        {documentList.filter(doc => doc.category === category.id || (category.id === 'all')).length}
                       </span>
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* 图表容器 */}
+              <div className="h-64">
+                <canvas id="learningStatsChart"></canvas>
               </div>
             </div>
           </div>
@@ -252,8 +247,11 @@ const StudyDocs = () => {
                   <Link
                     key={doc.id}
                     to={doc.link}
-                    // 关键修改：导航时传递当前活跃的分类
-                    state={{ activeCategory: activeCategory }}
+                    // 导航时传递当前活跃的分类和文档ID
+                    state={{
+                      activeCategory: activeCategory,
+                      docId: doc.id  // 传递文档ID
+                    }}
                     className="bg-white rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md hover:-translate-y-1 group"
                   >
                     <div className="p-5">
@@ -288,11 +286,6 @@ const StudyDocs = () => {
                       </div>
 
                       <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                        <span className="text-sm text-gray-500">
-                          <i className="fa fa-calendar-o mr-1"></i>
-                          最后更新: {doc.lastUpdated}
-                        </span>
-
                         <span className="text-indigo-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
                           <span>查看详情</span>
                           <i className="fa fa-arrow-right text-sm"></i>
@@ -311,4 +304,3 @@ const StudyDocs = () => {
 };
 
 export default StudyDocs;
-    

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import docs from './Docs/json/docs.json'; // 导入JSON数据
 
-const DocLayout = ({ title, children }) => {
+const DocLayout = ({ children }) => {
   const location = useLocation();
-  const navigate = useNavigate(); // 用于编程式导航
+  const navigate = useNavigate();
   const [shouldScroll, setShouldScroll] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  // 存储当前文档的完整数据
+  const [currentDoc, setCurrentDoc] = useState(null);
 
   // 监听滚动事件，用于导航栏样式变化
   useEffect(() => {
@@ -17,6 +20,18 @@ const DocLayout = ({ title, children }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 用路由传递的docId，匹配JSON中的文档
+  useEffect(() => {
+    // 从路由state中获取跳转时携带的docId
+    const docId = location.state?.docId;
+    if (docId) {
+      // 用id精准查找（id是唯一的，不会重复）
+      const matchedDoc = docs.find(doc => doc.id === docId);
+      setCurrentDoc(matchedDoc); // 找到后存入状态
+    }
+  }, [location.state?.docId]);
+
+  // 滚动逻辑
   useEffect(() => {
     if (shouldScroll && location.pathname === '/' && location.hash === '#study-docs') {
       const target = document.getElementById('study-docs');
@@ -29,18 +44,20 @@ const DocLayout = ({ title, children }) => {
 
   // 处理返回操作，携带分类状态
   const handleBack = () => {
-    // 从location.state获取之前的分类
     const activeCategory = location.state?.activeCategory;
-
-    // 导航回文档列表，并携带分类状态
     navigate('/#study-docs', {
       state: { activeCategory: activeCategory }
     });
   };
 
+  // 加载状态
+  if (!currentDoc) {
+    return <div className="container mx-auto py-20 text-center">加载中...</div>;
+  }
+
   return (
     <section className="min-h-screen bg-gray-50">
-      {/* 顶部导航栏 - 滚动时变化样式 */}
+      {/* 顶部导航栏 */}
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
@@ -53,9 +70,8 @@ const DocLayout = ({ title, children }) => {
         </div>
       </header>
 
-      {/* 固定返回按钮 - 为移动端和电脑端分别设置样式 */}
+      {/* 固定返回按钮 */}
       <div className="fixed z-50">
-        {/* 移动端样式 */}
         <button
           onClick={handleBack}
           className="fixed bottom-6 right-6 md:hidden
@@ -68,7 +84,6 @@ const DocLayout = ({ title, children }) => {
           <i className="fa fa-arrow-left"></i>
         </button>
 
-        {/* 电脑端样式 */}
         <button
           onClick={handleBack}
           className="hidden md:flex
@@ -87,15 +102,24 @@ const DocLayout = ({ title, children }) => {
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transform transition-all hover:shadow-md">
           {/* 文档标题区域 */}
           <div className="px-6 sm:px-8 py-6 border-b border-gray-100 bg-gray-50">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              {currentDoc.title}
+            </h1>
             <div className="flex flex-wrap items-center text-gray-500 text-sm mt-4 gap-x-6 gap-y-2">
               <span className="flex items-center">
                 <i className="fa fa-calendar-o mr-1.5"></i>
-                <span>最后更新: 2023-06-18</span>
+                <span>最后更新: {currentDoc.lastUpdated}</span>
               </span>
               <span className="flex items-center">
-                <i className="fa fa-tag mr-1.5"></i>
-                <span>技术文档</span>
+                <i className="fa fa-folder-o mr-1.5"></i>
+                <span>分类: {
+                  {
+                    'frontend': '前端开发',
+                    'backend': '后端开发',
+                    'database': '数据库',
+                    'ai': '人工智能'
+                  }[currentDoc.category] || currentDoc.category
+                }</span>
               </span>
               <span className="flex items-center">
                 <i className="fa fa-clock-o mr-1.5"></i>
@@ -113,7 +137,7 @@ const DocLayout = ({ title, children }) => {
 
           {/* 页脚区域 */}
           <div className="px-6 sm:px-8 py-4 border-t border-gray-100 bg-gray-50 text-center text-gray-500 text-sm">
-            <p>© 2023 技术文档中心 | 持续更新中</p>
+            <p>© 2025 技术文档中心 | 持续更新中</p>
           </div>
         </div>
 
@@ -126,4 +150,3 @@ const DocLayout = ({ title, children }) => {
 };
 
 export default DocLayout;
-    
