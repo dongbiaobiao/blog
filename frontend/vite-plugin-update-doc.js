@@ -15,7 +15,7 @@ const updateDocPlugin = () => {
     configResolved() {
       // 监听目标文件路径（根据你的项目结构调整！）
       // 示例：假设CssFlexbox.jsx在src目录下
-      const targetFile = path.resolve(__dirname, './src/components/Docs/CssFlexbox.jsx');
+      const targetFile = path.resolve(__dirname, './src/components/Docs/LLaMAFactory.jsx');
 
       // 初始化文件监听器
       watcher = chokidar.watch(targetFile, {

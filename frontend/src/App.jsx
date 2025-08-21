@@ -5,11 +5,11 @@ import Home from './components/Home';
 import Resume from './components/Resume';
 import StudyDocs from './components/StudyDocs';
 // 导入所有独立文档组件
-import ReactLifecycle from './components/Docs/ReactLifecycle';
-import MySQLIndexOptimization from './components/Docs/MySQLIndexOptimization';
+import Deploying_vLLM_on_Local_CPU from './components/Docs/Deploying_vLLM_on_Local_CPU';
+import SQLAlchemyFastAPIReact from './components/Docs/SQLAlchemy+FastAPI+React';
 import NodejsMiddleware from './components/Docs/NodejsMiddleware';
 import PythonDataAnalysis from './components/Docs/PythonDataAnalysis';
-import CssFlexbox from './components/Docs/CssFlexbox';
+import LLaMAFactory from './components/Docs/LLaMA-Factory';
 import DocPlaceholder from './components/DocPlaceholder';
 import FuturePlan from './components/FuturePlan';
 import GitHubProjects from './components/GitHubProjects';
@@ -82,11 +82,11 @@ const AppContent = () => {
         } />
 
         {/* StudyDocs文档跳转页面链接 */}
-        <Route path="/docs/react-lifecycle" element={<ReactLifecycle />} />
-        <Route path="/docs/mysql-index-optimization" element={<MySQLIndexOptimization />} />
+        <Route path="/docs/react-lifecycle" element={<Deploying_vLLM_on_Local_CPU />} />
+        <Route path="/docs/mysql-index-optimization" element={<SQLAlchemyFastAPIReact />} />
         <Route path="/docs/nodejs-middleware" element={<NodejsMiddleware />} />
         <Route path="/docs/python-data-analysis" element={<PythonDataAnalysis />} />
-        <Route path="/docs/css-flexbox" element={<CssFlexbox />} />
+        <Route path="/docs/css-flexbox" element={<LLaMAFactory />} />
 
         {/* 其他文档相关路由 */}
         <Route path="/docs/recent" element={<DocPlaceholder title="最近查看" />} />

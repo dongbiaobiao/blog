@@ -1,15 +1,15 @@
 [
   {
     "id": 1,
-    "title": "React 组件生命周期详解",
-    "category": "frontend",
-    "date": "2025-06-18",
-    "lastUpdated": "2025-06-18",
+    "title": "本地 CPU 环境下 vllm 的部署与 Qwen2 模型推理",
+    "category": "ai",
+    "date": "2025-08-13",
+    "lastUpdated": "2025-08-13",
     "color": "bg-blue-500",
-    "tags": ["React", "前端", "组件"],
+    "tags": ["CPU", "vllm 部署", "Qwen2","模型推理"],
     "link": "/docs/react-lifecycle",
     "image": "https://picsum.photos/seed/react-lifecycle/600/300",
-    "description": "详细讲解React组件的生命周期方法，包括挂载、更新和卸载三个阶段。"
+    "description": "详细介绍了在本地 CPU 环境下，通过安装 conda、从源代码构建 Wheel 或使用预构建镜像的方式部署 vllm，下载 Qwen2-0.5B-Instruct 模型后运行镜像实现服务端与客户端交互及进行模型推理的过程。"
   },
   {
     "id": 2,
@@ -38,7 +38,7 @@
   {
     "id": 4,
     "title": "Python 数据分析入门",
-    "category": "ai",
+    "category": "frontend",
     "date": "2025-05-15",
     "lastUpdated": "2025-05-20",
     "color": "bg-purple-500",
@@ -49,14 +49,14 @@
   },
   {
     "id": 5,
-    "title": "CSS Flexbox 布局全解析",
-    "category": "frontend",
+    "title": "基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程",
+    "category": "ai",
     "date": "2025-08-11",
     "lastUpdated": "2025-08-11",
     "color": "bg-blue-500",
-    "tags": ["CSS", "布局", "前端"],
+    "tags": ["LLaMA", "Qwen2.5", "LoRA微调", "Ollama部署"],
     "link": "/docs/css-flexbox",
     "image": "https://picsum.photos/seed/css-flexbox/600/300",
-    "description": "全面解析CSS Flexbox布局模型及实例演示。"
+    "description": "详细介绍了使用 LLaMA-Factory 工具对 Qwen2.5 模型进行环境搭建、微调（含脚本与可视化两种方式）及模型合并部署的完整流程。"
   }
 ]
