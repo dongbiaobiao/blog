@@ -90,15 +90,13 @@ const Paragraph = ({ children, style = {} }) => (
 // 折叠面板组件
 const Collapsible = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(true);
-
   return (
     <div style={{
       margin: '1.5rem 0',
       border: `1px solid ${COLORS.border}`,
       borderRadius: '6px',
       boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-      transition: 'all 0.3s ease',
-      overflow: 'visible'
+      transition: 'all 0.3s ease'
     }}>
       <div
         style={{
@@ -109,36 +107,33 @@ const Collapsible = ({ title, children }) => {
           justifyContent: 'space-between',
           alignItems: 'center',
           fontWeight: '600',
-          color: COLORS.dark,
-          transition: 'background 0.3s ease'
+          color: COLORS.heading,
+          borderRadius: '6px 6px 0 0',
+          transition: 'background 0.2s ease'
         }}
         onClick={() => setIsOpen(!isOpen)}
+        onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
+        onMouseOut={(e) => e.currentTarget.style.background = COLORS.light}
       >
-        <span style={{ ...baseTextStyle, color: COLORS.dark, fontWeight: 600 }}>{title}</span>
+        <span>{title}</span>
         <span style={{
           transition: 'transform 0.3s ease',
-          fontSize: '1.2rem',
-          color: COLORS.primary
+          color: COLORS.primary,
+          fontWeight: 'bold'
         }}>
           {isOpen ? '−' : '+'}
         </span>
       </div>
       <div
         style={{
-          height: isOpen ? 'auto' : '0',
-          overflow: isOpen ? 'visible' : 'hidden',
-          transition: 'height 0.5s ease-in-out'
+          maxHeight: isOpen ? '2000px' : '0',
+          overflow: 'hidden',
+          transition: 'max-height 0.5s ease',
+          borderTop: isOpen ? `1px solid ${COLORS.border}` : 'none'
         }}
       >
-        <div style={{
-          padding: '1.25rem',
-          borderTop: `1px solid ${COLORS.border}`,
-          background: 'white',
-          ...baseTextStyle
-        }}>
-          <div style={baseTextStyle}>
-            {children}
-          </div>
+        <div style={{ padding: '1.25rem', backgroundColor: 'white' }}>
+          {Array.isArray(children) ? children : [children]}
         </div>
       </div>
     </div>
@@ -359,9 +354,9 @@ const LLaMAFactory = () => {
         maxWidth: '1000px',
         margin: '0 auto',
         padding: '0 1.5rem',
-        paddingBottom: '3rem',
-        ...baseTextStyle,
-        position: 'relative'
+        color: COLORS.body,
+        lineHeight: '1.8',
+        whiteSpace: 'normal'
       }}>
         {/*<LastUpdatedTime />*/}
 

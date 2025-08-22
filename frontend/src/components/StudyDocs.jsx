@@ -286,6 +286,13 @@ const StudyDocs = () => {
                       </div>
 
                       <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+
+                        <span className="text-sm text-gray-500">
+                          <i className="fa fa-calendar-o mr-1"></i>
+                          最后更新: {doc.lastUpdated}
+                        </span>
+
+
                         <span className="text-indigo-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
                           <span>查看详情</span>
                           <i className="fa fa-arrow-right text-sm"></i>

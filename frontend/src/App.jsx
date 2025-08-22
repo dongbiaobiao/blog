@@ -82,11 +82,11 @@ const AppContent = () => {
         } />
 
         {/* StudyDocs文档跳转页面链接 */}
-        <Route path="/docs/react-lifecycle" element={<Deploying_vLLM_on_Local_CPU />} />
-        <Route path="/docs/mysql-index-optimization" element={<SQLAlchemyFastAPIReact />} />
-        <Route path="/docs/nodejs-middleware" element={<Local_Deployment_and_Inference_of_PPOCRv5 />} />
+        <Route path="/docs/Deploying_vLLM_on_Local_CPU" element={<Deploying_vLLM_on_Local_CPU />} />
+        <Route path="/docs/SQLAlchemyFastAPIReact" element={<SQLAlchemyFastAPIReact />} />
+        <Route path="/docs/Local_Deployment_and_Inference_of_PPOCRv5" element={<Local_Deployment_and_Inference_of_PPOCRv5 />} />
         <Route path="/docs/python-data-analysis" element={<PythonDataAnalysis />} />
-        <Route path="/docs/css-flexbox" element={<LLaMAFactory />} />
+        <Route path="/docs/LLaMA-Factory" element={<LLaMAFactory />} />
 
         {/* 其他文档相关路由 */}
         <Route path="/docs/recent" element={<DocPlaceholder title="最近查看" />} />

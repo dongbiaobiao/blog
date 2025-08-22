@@ -93,7 +93,7 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
   });
 
   if (!currentDoc) {
-    return <div className="container mx-auto py-20 text-center">加载中...</div>;
+    return <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:pl-64 py-12">加载中...</div>;
   }
 
   return (
@@ -104,11 +104,11 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
           isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
         }`}
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800 text-center">
-            技术文档中心
-          </h1>
-        </div>
+        {/*<div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">*/}
+        {/*  <h1 className="text-xl md:text-2xl font-bold text-gray-800 text-center">*/}
+        {/*    技术文档中心*/}
+        {/*  </h1>*/}
+        {/*</div>*/}
       </header>
 
       {/* 固定返回按钮和目录 */}
@@ -127,7 +127,7 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
         </button>
 
         {/* 桌面端侧边栏：返回按钮 + 目录 */}
-        <div className="hidden md:block ml-[40px] mt-[150px] w-[220px]">
+        <div className="hidden md:block ml-4 mt-[150px] w-[220px]">
           <button
             onClick={handleBack}
             className="flex items-center mb-6

@@ -7,7 +7,7 @@
     "lastUpdated": "2025-08-13",
     "color": "bg-blue-500",
     "tags": ["CPU", "vllm 部署", "Qwen2","模型推理"],
-    "link": "/docs/react-lifecycle",
+    "link": "/docs/Local_Deployment_and_Inference_of_PPOCRv5",
     "image": "https://picsum.photos/seed/react-lifecycle/600/300",
     "description": "详细介绍了在本地 CPU 环境下，通过安装 conda、从源代码构建 Wheel 或使用预构建镜像的方式部署 vllm，下载 Qwen2-0.5B-Instruct 模型后运行镜像实现服务端与客户端交互及进行模型推理的过程。"
   },
@@ -15,11 +15,11 @@
     "id": 2,
     "title": "用户认证系统前端实现",
     "category": "frontend",
-    "date": "2025-06-10",
-    "lastUpdated": "2025-06-12",
+    "date": "2025-08-10",
+    "lastUpdated": "2025-08-12",
     "color": "bg-yellow-500",
     "tags": ["React", "FastAPI", "SQLAlchemy", "JWT"],
-    "link": "/docs/mysql-index-optimization",
+    "link": "/docs/SQLAlchemyFastAPIReact",
     "image": "https://picsum.photos/seed/mysql-index/600/300",
     "description": "基于 React、FastAPI、SQLAlchemy 技术栈的用户认证系统前端实现展开，详细介绍了环境安装配置、前后端项目结构创建，以及登录、注册页面的具体开发代码和功能实现，涉及表单处理、接口请求、JWT 令牌存储与路由跳转等核心逻辑。"
   },
@@ -31,44 +31,34 @@
     "lastUpdated": "2025-08-15",
     "color": "bg-green-500",
     "tags": ["PaddlePaddle", "PaddleOCR", "PP-OCRv5"],
-    "link": "/docs/nodejs-middleware",
+    "link": "/docs/Local_Deployment_and_Inference_of_PPOCRv5",
     "image": "https://picsum.photos/seed/node-middleware/600/300",
     "description": "详细介绍了在本地环境中通过 conda 创建环境，安装 PaddlePaddle 3.0 和 PaddleOCR，下载 PaddleOCR 项目并进行 PP-OCRv5 模型的命令行与 Python 脚本推理测试相关步骤。"
   },
   {
     "id": 4,
-    "title": "Python 数据分析入门",
-    "category": "frontend",
-    "date": "2025-05-15",
-    "lastUpdated": "2025-05-20",
-    "color": "bg-purple-500",
-    "tags": ["Python", "数据分析", "AI"],
-    "link": "/docs/python-data-analysis",
-    "image": "https://picsum.photos/seed/python-data/600/300",
-    "description": "从零开始学习使用Python进行数据分析。"
-  },
-  {
-    "id": 5,
     "title": "基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程",
     "category": "ai",
     "date": "2025-08-11",
     "lastUpdated": "2025-08-11",
     "color": "bg-blue-500",
     "tags": ["LLaMA", "Qwen2.5", "LoRA微调", "Ollama部署"],
-    "link": "/docs/css-flexbox",
+    "link": "/docs/LLaMA-Factory",
     "image": "https://picsum.photos/seed/css-flexbox/600/300",
     "description": "详细介绍了使用 LLaMA-Factory 工具对 Qwen2.5 模型进行环境搭建、微调（含脚本与可视化两种方式）及模型合并部署的完整流程。"
   },
   {
-    "id": 6,
-    "title": "用户认证系统前端实现",
-    "category": "database",
-    "date": "2025-06-10",
-    "lastUpdated": "2025-06-12",
-    "color": "bg-yellow-500",
-    "tags": ["MySQL", "数据库", "优化"],
-    "link": "/docs/mysql-index-optimization",
-    "image": "https://picsum.photos/seed/mysql-index/600/300",
-    "description": "通过实际案例介绍MySQL索引的工作原理及优化技巧。"
+    "id": 5,
+    "title": "Python 数据分析入门",
+    "category": "frontend",
+    "date": "2025-07-15",
+    "lastUpdated": "2025-07-20",
+    "color": "bg-purple-500",
+    "tags": ["Python", "数据分析", "AI"],
+    "link": "/docs/python-data-analysis",
+    "image": "https://picsum.photos/seed/python-data/600/300",
+    "description": "从零开始学习使用Python进行数据分析。"
   }
+
+
 ]

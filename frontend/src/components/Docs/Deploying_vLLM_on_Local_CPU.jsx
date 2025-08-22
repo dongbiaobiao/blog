@@ -595,10 +595,8 @@ conda activate vllm`} />
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805151234827.png"
             alt="镜像重命名后的显示"
           />
-          <TipBox type="info">
             <p style={{ whiteSpace: 'normal' }}>若Docker拉取速度慢，可配置国内镜像源加速：</p>
             <CodeBlock language="bash" code={dockerMirrorConfigCode} />
-          </TipBox>
         </Collapsible>
 
         {/* 4. 模型下载 - 新增id属性 */}
