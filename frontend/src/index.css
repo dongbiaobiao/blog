@@ -11,3 +11,47 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* 新增响应式样式 */
+@media (max-width: 768px) {
+  /* 优化文档内容容器 */
+  .container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  /* 调整文档内段落和标题 */
+  .prose p {
+    margin-bottom: 1rem !important;
+    font-size: 1rem !important;
+    line-height: 1.7 !important;
+  }
+
+  .prose h3 {
+    font-size: 1.3rem !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 0.8rem !important;
+  }
+}
+
+/* 针对小屏幕手机的额外优化 */
+@media (max-width: 480px) {
+  .prose {
+    font-size: 0.95rem !important;
+  }
+}

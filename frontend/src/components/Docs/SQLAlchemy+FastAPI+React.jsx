@@ -159,7 +159,7 @@ const ImageViewer = ({ src, alt, style }) => {
     <div style={{
       ...style,
       textAlign: 'center',
-      margin: '1.5rem 0',
+      margin: '1rem -0.5rem',
       display: 'flex',
       justifyContent: 'center'
     }}>
@@ -176,7 +176,7 @@ const ImageViewer = ({ src, alt, style }) => {
           alt={alt}
           style={{
             maxWidth: '100%',
-            maxHeight: '600px',
+            maxHeight: '400px',
             borderRadius: '4px'
           }}
         />
@@ -231,13 +231,13 @@ const CodeBlock = ({ language, children }) => {
     <div style={{
       backgroundColor: '#1e293b',
       borderRadius: '6px',
-      margin: '1rem 0 1.5rem 0',
+      margin: '1rem -0.5rem',
       overflow: 'hidden',
       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
     }}>
       <div style={{
         padding: '0.85rem 1.25rem',
-        fontSize: '0.85rem',
+        fontSize: '0.8rem',
         color: '#e2e8f0',
         borderBottom: '1px solid #334155',
         display: 'flex',
@@ -271,13 +271,13 @@ const CodeBlock = ({ language, children }) => {
           <span>{buttonText}</span>
         </button>
       </div>
-      <div style={{ maxHeight: '500px', overflow: 'auto' }}>
+      <div style={{ maxHeight: '400px', overflow: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <pre style={{ margin: 0 }}>
           <code style={{
-            padding: '1.25rem',
+            padding: '1rem',
             display: 'block',
             fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace',
-            fontSize: '0.9rem',
+            fontSize: '0.8rem',
             lineHeight: '1.6',
             color: '#e2e8f0',
           }}>

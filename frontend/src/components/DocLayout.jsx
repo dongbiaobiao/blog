@@ -104,7 +104,7 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
           isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
         }`}
       >
-        <div className="container mx-auto px-4 flex justify-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-xl md:text-2xl font-bold text-gray-800 text-center">
             技术文档中心
           </h1>
@@ -127,7 +127,7 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
         </button>
 
         {/* 桌面端侧边栏：返回按钮 + 目录 */}
-        <div className="hidden md:block ml-[40px] mt-8 w-[220px]">
+        <div className="hidden md:block ml-[40px] mt-[150px] w-[220px]">
           <button
             onClick={handleBack}
             className="flex items-center mb-6
@@ -172,10 +172,10 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
       {/* 主要内容区域 */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* 文档卡片 */}
-        <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transform transition-all hover:shadow-md">
+        <div className="w-full mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transform transition-all hover:shadow-md">
           {/* 文档标题区域 */}
-          <div className="px-6 sm:px-8 py-6 border-b border-gray-100 bg-gray-50">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+          <div className="px-4 sm:px-6 py-4 sm:py-6 border-b border-gray-100 bg-gray-50">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
               {currentDoc.title}
             </h1>
             <div className="flex flex-wrap items-center text-gray-500 text-sm mt-4 gap-x-6 gap-y-2">
@@ -202,7 +202,7 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
           </div>
 
           {/* 文档内容区域 */}
-          <div className="px-6 sm:px-8 py-8">
+          <div className="px-4 sm:px-6 py-6 sm:py-8">
             <div className="prose max-w-none prose-indigo">
               {renderChildrenWithHeadings}
             </div>
@@ -215,8 +215,8 @@ const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
         </div>
 
         {/* 侧边留白 */}
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-1/4 max-w-xs bg-gray-50"></div>
-        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-1/4 max-w-xs bg-gray-50"></div>
+        {/*<div className="hidden lg:block absolute right-0 top-0 bottom-0 w-1/4 max-w-xs bg-gray-50"></div>*/}
+        {/*<div className="hidden lg:block absolute left-0 top-0 bottom-0 w-1/4 max-w-xs bg-gray-50"></div>*/}
       </div>
     </section>
   );
