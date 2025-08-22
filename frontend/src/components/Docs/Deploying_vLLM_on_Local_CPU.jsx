@@ -2,7 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import DocLayout from '../DocLayout';
 import { docs } from '../StudyDocs';
 
-// 假设LLaMAFactory.jsx使用的主题颜色配置
+// 新增：统一ID生成函数，与DocLayout保持一致
+const generateHeadingId = (headingText) => {
+  return headingText.toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]/g, '');
+};
+
+// 主题颜色配置
 const COLORS = {
   primary: '#3b82f6',
   secondary: '#64748b',
@@ -16,12 +23,12 @@ const COLORS = {
   warning: '#f59e0b',
   danger: '#ef4444',
   success: '#10b981',
-  // LLaMAFactory风格的代码主题
+  // 代码主题
   codeBg: '#1e293b',
   codeText: '#e2e8f0'
 };
 
-// 显示文档最后更新时间的组件
+// 最后更新时间组件
 const LastUpdatedTime = () => {
   const vllmDoc = docs.find(doc => doc.title === '本地CPU部署vLLM');
   const lastUpdated = vllmDoc ? vllmDoc.lastUpdated : '未知';
@@ -97,7 +104,7 @@ const Collapsible = ({ title, children }) => {
         }}
       >
         <div style={{ padding: '1.25rem', backgroundColor: 'white' }}>
-          {children}
+          {Array.isArray(children) ? children : [children]}
         </div>
       </div>
     </div>
@@ -141,7 +148,9 @@ const TipBox = ({ type = 'info', children }) => {
       gap: '0.75rem'
     }}>
       <div style={{ fontSize: '1.25rem', marginTop: '0.1rem' }}>{icons[type]}</div>
-      <div style={{ lineHeight: '1.7' }}>{children}</div>
+      <div style={{ lineHeight: '1.7', whiteSpace: 'normal' }}>
+        {typeof children === 'string' ? <span>{children}</span> : children}
+      </div>
     </div>
   );
 };
@@ -172,6 +181,7 @@ const ImageViewer = ({ src, alt, style }) => {
             maxHeight: '600px',
             borderRadius: '4px'
           }}
+          loading="lazy"
         />
         <div style={{
           marginTop: '0.75rem',
@@ -186,25 +196,22 @@ const ImageViewer = ({ src, alt, style }) => {
   );
 };
 
-// 代码框组件（使用LLaMAFactory风格主题）
-const CodeBlock = ({ language, children }) => {
+// 代码框组件 - 修复版
+const CodeBlock = ({ language, code }) => {
   const [buttonText, setButtonText] = useState('复制代码');
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef(null);
 
   const handleCopy = () => {
-    // 复制代码到剪贴板
-    navigator.clipboard.writeText(children.trim())
+    // 确保处理的是字符串类型，避免trim错误
+    const codeText = typeof code === 'string' ? code.trim() : '';
+    navigator.clipboard.writeText(codeText)
       .then(() => {
         setButtonText('已复制');
         setCopied(true);
 
-        // 清除之前的定时器
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-        // 3秒后恢复按钮文本
         timeoutRef.current = setTimeout(() => {
           setButtonText('复制代码');
           setCopied(false);
@@ -212,19 +219,17 @@ const CodeBlock = ({ language, children }) => {
       })
       .catch(err => {
         console.error('复制失败:', err);
+        setButtonText('复制失败');
+        setTimeout(() => setButtonText('复制代码'), 2000);
       });
   };
 
-  // 组件卸载时清除定时器
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
 
-  // 语言名称映射表，让显示更友好
   const languageMap = {
     'bash': 'Bash 命令',
     'python': 'Python 代码',
@@ -233,17 +238,16 @@ const CodeBlock = ({ language, children }) => {
 
   return (
     <div style={{
-      backgroundColor: '#1e293b',
+      backgroundColor: COLORS.codeBg,
       borderRadius: '6px',
       margin: '1rem 0 1.5rem 0',
       overflow: 'hidden',
       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
     }}>
-      {/* 固定的代码头部 */}
       <div style={{
         padding: '0.85rem 1.25rem',
         fontSize: '0.85rem',
-        color: '#e2e8f0',
+        color: COLORS.codeText,
         borderBottom: '1px solid #334155',
         display: 'flex',
         justifyContent: 'space-between',
@@ -276,7 +280,6 @@ const CodeBlock = ({ language, children }) => {
           <span>{buttonText}</span>
         </button>
       </div>
-      {/* 可滚动的代码内容 */}
       <div style={{
         maxHeight: '500px',
         overflow: 'auto'
@@ -288,9 +291,11 @@ const CodeBlock = ({ language, children }) => {
             fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace',
             fontSize: '0.9rem',
             lineHeight: '1.6',
-            color: '#e2e8f0',
+            color: COLORS.codeText,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all'
           }}>
-            {children}
+            {typeof code === 'string' ? code : ''}
           </code>
         </pre>
       </div>
@@ -303,7 +308,17 @@ const Deploying_vLLM_on_Local_CPU = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // 代码内容
+  // 定义文章小标题列表（用于生成目录）
+  const headings = [
+    "1. 安装conda",
+    "2. 从源代码构建Wheel",
+    "3. 使用预构建的镜像",
+    "4. 模型下载",
+    "5. 模型推理-API调用推理",
+    "6. 模型推理-Python代码推理"
+  ];
+
+  // 所有代码内容
   const installCondaCode = `# 下载Anaconda安装包
 wget -P download_dir https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh
 
@@ -334,8 +349,7 @@ pip install -v -r requirements/cpu.txt --extra-index-url https://download.pytorc
 # 构建并安装CPU后端
 VLLM_TARGET_DEVICE=cpu python setup.py install`;
 
-  const dockerCommandsCode = `
-# 拉取镜像
+  const dockerCommandsCode = `# 拉取镜像
 docker pull public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo:v0.10.0.0
 
 # 查看本地镜像
@@ -347,42 +361,49 @@ docker tag public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo:v0.10.0 vllm:latest`;
   const downloadModelCode = `# 克隆Qwen2-0.5B-Instruct模型
 git clone https://www.modelscope.cn/Qwen/Qwen2-0.5B-Instruct.git`;
 
-  const startServerCode = `docker run --rm \
---privileged=true \
---shm-size=4g \
--p 8000:8000 \
--v /mnt/c/Users/dbb/modelscope/Qwen3-0.6B:/model \
-vllm:latest \
+  const startServerCode = `docker run --rm \\
+--privileged=true \\
+--shm-size=4g \\
+-p 8000:8000 \\
+-v /mnt/c/Users/dbb/modelscope/Qwen3-0.6B:/model \\
+vllm:latest \\
 --model=/model --dtype=bfloat16 --max-model-len=1024`;
 
-  const clientRequestCode = `curl -s http://localhost:8000/v1/chat/completions \
--H "Content-Type: application/json" \
--d '{"model":"/model","messages":[{"role":"user","content":"我的名字是"}]}' \
+  const clientRequestCode = `curl -s http://localhost:8000/v1/chat/completions \\
+-H "Content-Type: application/json" \\
+-d '{"model":"/model","messages":[{"role":"user","content":"我的名字是"}]}' \\
 | jq -r '.choices[0].message.content'`;
 
   const inferenceCode = `# SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 from vllm import LLM, SamplingParams
 
-# 测试提示词
+# Sample prompts.
+# prompts = [
+#     "Hello, my name is",
+#     "The president of the United States is",
+#     "The capital of France is",
+#     "The future of AI is",
+# ]
 prompts = [
     "请介绍一下人工智能的应用领域",
     "写一首关于秋天的短诗"
 ]
 
-# 创建采样参数
+# Create a sampling params object.
 sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
 
 def main():
-    # 初始化LLM
+    # Create an LLM.
+    # llm = LLM(model="facebook/opt-125m")
     llm = LLM(model="/mnt/c/Users/dbb/modelscope/Qwen2-0.5B-Instruct")
-    
-    # 生成文本
+    # Generate texts from the prompts.
+    # The output is a list of RequestOutput objects
+    # that contain the prompt, generated text, and other information.
     outputs = llm.generate(prompts, sampling_params)
 
-    # 打印输出结果
-    print("\\nGenerated Outputs:\\
-n" + "-" * 60)
+    # Print the outputs.
+    print("\\nGenerated Outputs:\\n" + "-" * 60)
     for output in outputs:
         prompt = output.prompt
         generated_text = output.outputs[0].text
@@ -404,13 +425,15 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker`;
 
   return (
-    <DocLayout title="本地CPU部署vLLM">
+    // 将标题列表传递给DocLayout组件
+    <DocLayout title="本地CPU部署vLLM" headings={headings}>
       <div style={{
         maxWidth: '1000px',
         margin: '0 auto',
         padding: '0 1.5rem',
         color: COLORS.body,
-        lineHeight: '1.8'
+        lineHeight: '1.8',
+        whiteSpace: 'normal'
       }}>
 
         <div style={{
@@ -419,35 +442,39 @@ sudo systemctl restart docker`;
           padding: '1rem 1.25rem',
           marginBottom: '2rem',
           borderRadius: '0 6px 6px 0',
+          whiteSpace: 'normal'
         }}>
           <p style={{
             lineHeight: '1.7',
             fontSize: '1.05rem',
             color: '#334155',
-            margin: 0
+            margin: 0,
+            whiteSpace: 'normal',
+            wordBreak: 'break-word'
           }}>
-            本文档详细介绍基于LLaMA-Factory进行大模型（以Qwen2.5为例）微调的完整流程，包括环境准备、微调操作、模型合并与部署等步骤，适合初学者快速上手。
+            本文档详细介绍了在本地 CPU 环境下，通过安装 conda、从源代码构建 Wheel 或使用预构建镜像的方式部署 vllm，下载 Qwen2-0.5B-Instruct 模型后运行镜像实现服务端与客户端交互及进行模型推理的过程。
           </p>
         </div>
 
-        {/* 章节标题样式增强 */}
-        <h3 style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>1. 安装conda</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+        {/* 1. 安装conda - 新增id属性 */}
+        <h3
+          id={generateHeadingId("1. 安装conda")}
+          style={{
+            margin: '2rem 0 1.25rem 0',
+            color: COLORS.primary,
+            borderLeft: `4px solid ${COLORS.primary}`,
+            paddingLeft: '0.75rem',
+            fontSize: '1.4rem',
+            fontWeight: '600'
+          }}
+        >1. 安装conda</h3>
+        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
           使用conda创建独立的Python环境，避免依赖冲突。
         </p>
 
         <Collapsible title="1.1 下载并安装Anaconda">
-          <p>通过命令行下载Anaconda并创建vllm专用环境：</p>
-          <CodeBlock language="bash">
-{installCondaCode}
-          </CodeBlock>
+          <p style={{ whiteSpace: 'normal' }}>通过命令行下载Anaconda并创建vllm专用环境：</p>
+          <CodeBlock language="bash" code={installCondaCode} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250804164734123.png"
             alt="安装conda的命令执行界面"
@@ -455,47 +482,47 @@ sudo systemctl restart docker`;
         </Collapsible>
 
         <Collapsible title="1.2 查看conda版本和环境">
-          <p>安装完成后可通过相应命令验证conda安装状态及已创建的环境：</p>
-          <CodeBlock language="bash">
-# 查看conda版本
+          <p style={{ whiteSpace: 'normal' }}>安装完成后可通过相应命令验证conda安装状态及已创建的环境：</p>
+          <CodeBlock language="bash" code={`# 查看conda版本
 conda --version
 
 # 查看所有环境
 conda env list
 
 # 激活vllm环境
-conda activate vllm
-          </CodeBlock>
+conda activate vllm`} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250804150943985.png"
             alt="查看conda环境的命令输出结果"
           />
         </Collapsible>
 
-        {/* 增强的分隔线 */}
+        {/* 分隔线 */}
         <div style={{
           height: '1px',
           background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
           margin: '2rem 0'
         }}></div>
 
-        <h3 style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>2. 从源代码构建Wheel</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+        {/* 2. 从源代码构建Wheel - 新增id属性 */}
+        <h3
+          id={generateHeadingId("2. 从源代码构建Wheel")}
+          style={{
+            margin: '2rem 0 1.25rem 0',
+            color: COLORS.primary,
+            borderLeft: `4px solid ${COLORS.primary}`,
+            paddingLeft: '0.75rem',
+            fontSize: '1.4rem',
+            fontWeight: '600'
+          }}
+        >2. 从源代码构建Wheel</h3>
+        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
           通过源码编译方式安装vLLM的CPU版本，需要先安装必要的编译工具。
         </p>
 
         <Collapsible title="2.1 安装推荐的编译器">
-          <p>安装vLLM编译所需的系统工具和编译器：</p>
-          <CodeBlock language="bash">
-{installCompilerCode}
-          </CodeBlock>
+          <p style={{ whiteSpace: 'normal' }}>安装vLLM编译所需的系统工具和编译器：</p>
+          <CodeBlock language="bash" code={installCompilerCode} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250804170630836.png"
             alt="安装编译器的过程"
@@ -510,11 +537,8 @@ conda activate vllm
           <TipBox type="warning">
             <strong>注意：</strong>构建过程可能需要较长时间，取决于CPU性能和网络状况，建议在稳定网络环境下进行。
           </TipBox>
-          <p>克隆vLLM源码并编译安装CPU版本：</p>
-          <CodeBlock language="bash">
-{buildVllmCode}
-          </CodeBlock>
-
+          <p style={{ whiteSpace: 'normal' }}>克隆vLLM源码并编译安装CPU版本：</p>
+          <CodeBlock language="bash" code={buildVllmCode} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250804170707933.png"
             alt="克隆vLLM项目的命令执行结果"
@@ -529,30 +553,32 @@ conda activate vllm
           />
         </Collapsible>
 
+        {/* 后续章节内容保持不变 */}
         <div style={{
           height: '1px',
           background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
           margin: '2rem 0'
         }}></div>
 
-        <h3 style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>3. 使用预构建的镜像</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+        {/* 3. 使用预构建的镜像 - 新增id属性 */}
+        <h3
+          id={generateHeadingId("3. 使用预构建的镜像")}
+          style={{
+            margin: '2rem 0 1.25rem 0',
+            color: COLORS.primary,
+            borderLeft: `4px solid ${COLORS.primary}`,
+            paddingLeft: '0.75rem',
+            fontSize: '1.4rem',
+            fontWeight: '600'
+          }}
+        >3. 使用预构建的镜像</h3>
+        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
           如果不想从源码编译，可以直接使用预构建的Docker镜像，简化安装流程。
         </p>
 
         <Collapsible title="3.1 Docker镜像操作">
-          <p>拉取并重命名vLLM CPU版本镜像：</p>
-          <CodeBlock language="bash">
-{dockerCommandsCode}
-          </CodeBlock>
-
+          <p style={{ whiteSpace: 'normal' }}>拉取并重命名vLLM CPU版本镜像：</p>
+          <CodeBlock language="bash" code={dockerCommandsCode} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805100545745.png"
             alt="拉取镜像中的进度显示"
@@ -570,208 +596,203 @@ conda activate vllm
             alt="镜像重命名后的显示"
           />
           <TipBox type="info">
-            <p>若Docker拉取速度慢，可配置国内镜像源加速：</p>
-            <CodeBlock language="bash">
-{dockerMirrorConfigCode}
-            </CodeBlock>
+            <p style={{ whiteSpace: 'normal' }}>若Docker拉取速度慢，可配置国内镜像源加速：</p>
+            <CodeBlock language="bash" code={dockerMirrorConfigCode} />
           </TipBox>
         </Collapsible>
 
+        {/* 4. 模型下载 - 新增id属性 */}
         <div style={{
           height: '1px',
           background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
           margin: '2rem 0'
         }}></div>
 
-        <h3 style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>4. 模型下载</h3>
-
-        <p style={{ marginBottom: '1.25rem' }}>
+        <h3
+          id={generateHeadingId("4. 模型下载")}
+          style={{
+            margin: '2rem 0 1.25rem 0',
+            color: COLORS.primary,
+            borderLeft: `4px solid ${COLORS.primary}`,
+            paddingLeft: '0.75rem',
+            fontSize: '1.4rem',
+            fontWeight: '600'
+          }}
+        >4. 模型下载</h3>
+        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
           下载Qwen2-0.5B-Instruct模型到本地目录，用于后续部署和推理。
         </p>
 
         <Collapsible title="4.1 下载Qwen2模型">
-          <p>通过modelscope或git克隆方式获取模型文件：</p>
-          <CodeBlock language="bash">
-{downloadModelCode}
-          </CodeBlock>
+          <p style={{ whiteSpace: 'normal' }}>通过modelscope或git克隆方式获取模型文件：</p>
+          <CodeBlock language="bash" code={downloadModelCode} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805141757953.png"
             alt="下载模型的过程"
           />
-            <p>模型较大（约1GB），下载时间取决于网络速度。也可使用modelscope工具下载：</p>
-            <CodeBlock language="bash">
-pip install modelscope
-modelscope download --model Qwen/Qwen2-0.5B-Instruct --local_dir ./Qwen2-0.5B-Instruct
-            </CodeBlock>
+          <p style={{ whiteSpace: 'normal' }}>模型较大（约1GB），下载时间取决于网络速度。也可使用modelscope工具下载：</p>
+          <CodeBlock language="bash" code={`pip install modelscope
+modelscope download --model Qwen/Qwen2-0.5B-Instruct --local_dir ./Qwen2-0.5B-Instruct`} />
         </Collapsible>
 
+        {/* 5. 模型推理-API调用推理 */}
         <div style={{
           height: '1px',
           background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
           margin: '2rem 0'
         }}></div>
 
-        <h3 style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>5. 运行镜像</h3>
+        <h3
+          id={generateHeadingId("5. 模型推理-API调用推理")}
+          style={{
+            margin: '2rem 0 1.25rem 0',
+            color: COLORS.primary,
+            borderLeft: `4px solid ${COLORS.primary}`,
+            paddingLeft: '0.75rem',
+            fontSize: '1.4rem',
+            fontWeight: '600'
+          }}
+        >5. 模型推理-API调用推理</h3>
+        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
 
-        <p style={{ marginBottom: '1.25rem' }}>
-          部署流程分为服务端启动和客户端请求两部分，下面详细介绍操作步骤。
+          <TipBox type="info">
+            <p style={{ whiteSpace: 'normal' }}>
+              **工作流程**：<br/>
+              1. 在5.1中，先运行第一条命令启动 vLLM 服务（服务器会一直运行等待请求）<br/>
+              2. 在5.2中，再在另一个终端运行第二条命令发送提问（客户端请求）<br/>
+              3. 服务器收到请求后，用加载的 Qwen 模型计算回答并返回<br/>
+              4. 客户端接收并显示回答<br/>
+            </p>
+          </TipBox>
+
         </p>
 
-        <Collapsible title="5.1 开启服务端">
-          <p>启动vLLM服务并加载指定模型：</p>
-          <CodeBlock language="bash">
-{startServerCode}
-          </CodeBlock>
-          <p>参数说明：</p>
-          <ul style={{ margin: '1rem 0 1rem 1.5rem', lineHeight: '1.8' }}>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>--shm-size=4g</code>：设置共享内存大小</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>-p 8000:8000</code>：端口映射</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>-v</code>：将本地模型目录挂载到容器内</li>
 
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>--dtype=bfloat16</code>：指定数据类型</li>
-          </ul>
+        <Collapsible title="5.1 启动服务端">
+          <p style={{ whiteSpace: 'normal' }}>使用Docker命令启动vLLM服务，映射模型目录和端口：</p>
+          <CodeBlock language="bash" code={startServerCode} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805151529067.png"
-            alt="启动服务端的命令和输出"
+            alt="启动vLLM服务的命令输出"
           />
+          <TipBox type="info">
+            <p style={{ whiteSpace: 'normal' }}>
+              --基于 vllm 的 CPU 镜像创建容器，加载 Qwen2-0.5B-Instruct 模型。<br />
+              --shm-size=4g 参数用于设置共享内存大小，避免内存不足问题。<br />
+              -p 8000:8000 将容器的8000端口映射到主机的8000端口。<br />
+              -v 参数用于将本地模型目录挂载到容器中。
+            </p>
+          </TipBox>
         </Collapsible>
 
         <Collapsible title="5.2 启动客户端">
-          <p>通过curl命令发送请求测试服务：</p>
-          <CodeBlock language="bash">
-{clientRequestCode}
-          </CodeBlock>
+          <CodeBlock language="bash" code={`curl -s http://localhost:8000/v1/chat/completions   -H "Content-Type: application/json"   -d '{"model":"/model","messages":[{"role":"user","content":"我的名字是"}]}'   | jq -r
+'.choices[0].message.content'`} />
+
+          <TipBox type="info">
+            <p style={{ whiteSpace: 'normal' }}>
+              - 通过 HTTP POST 请求访问本地 8000 端口的 v1/chat/completions 接口。<br />
+              - 发送 "我的名字是" 的提问给 AI 模型。<br />
+              - 使用`jq`工具解析返回结果，提取并显示 AI 的回答内容。
+            </p>
+          </TipBox>
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805151622701.png"
-            alt="客户端请求及返回结果"
+            alt="启动客户端"
           />
         </Collapsible>
 
         <Collapsible title="5.3 结果分析">
-          <p>服务端会显示处理性能指标，可用于评估系统性能：</p>
-          <ul style={{ margin: '1rem 0 1rem 1.5rem', lineHeight: '1.8' }}>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>Avg prompt throughput</code>：提示词处理平均速度（tokens/s）</li>
 
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>Avg generation throughput</code>：文本生成平均速度（tokens/s）</li>
-          </ul>
+          <TipBox type="info">
+            <p style={{ whiteSpace: 'normal' }}>
+              - `Avg prompt throughput: 1.1 tokens/s`：提示词处理平均速度（每秒处理 1.1 个 token）。<br />
+              - `Avg generation throughput: 10.7 tokens/s`：文本生成平均速度（每秒生成 10.7 个 token）。
+            </p>
+          </TipBox>
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805151835984.png"
-            alt="服务端性能指标展示"
+            alt="结果分析"
           />
         </Collapsible>
 
+        {/* 6. 模型推理-Python代码推理 */}
         <div style={{
           height: '1px',
           background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
           margin: '2rem 0'
         }}></div>
 
-        <h3 style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>6. 使用模型推理</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
-          通过Python代码进行离线推理，无需启动独立服务器，适合开发和测试场景。
-        </p>
-
-        <Collapsible title="6.1 Python推理代码">
-          <p>使用vLLM的LLM类加载模型，支持批量处理提示词：</p>
+        <h3
+          id={generateHeadingId("6. 模型推理-Python代码推理")}
+          style={{
+            margin: '2rem 0 1.25rem 0',
+            color: COLORS.primary,
+            borderLeft: `4px solid ${COLORS.primary}`,
+            paddingLeft: '0.75rem',
+            fontSize: '1.4rem',
+            fontWeight: '600'
+          }}
+        >6. 模型推理-Python代码推理</h3>
+        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
+          `LLM`类提供了主要的 Python 接口，用于离线推理，即在不使用独立推理服务器的情况下与模型交互。
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805153312450.png"
-            alt="LLM类的说明文档截图"
+            alt="Python 接口"
           />
+        </p>
 
-          <CodeBlock language="python">
-{inferenceCode}
-          </CodeBlock>
-          <p>运行结果：</p>
+        <Collapsible title="使用Python代码推理">
+          <p style={{ whiteSpace: 'normal' }}>使用vLLM的Python SDK进行模型推理，以basic.py为例：</p>
+          <CodeBlock language="python" code={inferenceCode} />
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805141708844.png"
-            alt="推理执行过程的命令行输出"
+            alt="Python代码推理结果"
           />
+          <p style={{ whiteSpace: 'normal' }}>结果分析：</p>
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805141947293.png"
-            alt="初始推理结果展示"
+            alt="Python代码推理结果"
           />
+
+          <TipBox type="info">
+             <p style={{ whiteSpace: 'normal' }}>
+              - 输入`"Hello, my name is"`，输出续写了名字和背景；<br />
+              - 输入`"The capital of France is"`，输出中包含正确答案`"Paris"`。
+            </p>
+          </TipBox>
+
+          <p style={{ whiteSpace: 'normal' }}>重新运行，修改测试样例:</p>
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805142633563.png"
-            alt="修改样例后推理结果展示"
+            alt="Python代码推理结果"
           />
+
           <TipBox type="info">
-            <p>可根据需要调整采样参数控制输出随机性：</p>
-            <ul style={{ margin: '0.5rem 0 0 1.5rem', lineHeight: '1.8' }}>
-              <li><code style={{
-                background: `${COLORS.light}`,
-                padding: '0.15rem 0.35rem',
-                borderRadius: '3px',
-                color: COLORS.info,
-                fontSize: '0.9rem'
-              }}>temperature</code>：温度参数，值越大输出越随机（0-1）</li>
-              <li><code style={{
-                background: `${COLORS.light}`,
-                padding: '0.15rem 0.35rem',
-                borderRadius: '3px',
-                color: COLORS.info,
-                fontSize: '0.9rem'
-              }}>top_p</code>：核采样参数，控制输出多样性（0-1）</li>
-            </ul>
+             <p style={{ whiteSpace: 'normal' }}>
+              - 输入 “请介绍一下人工智能的应用领域”，输出开始列举多行业；<br />
+              - 输入 “写一首关于秋天的短诗”，输出答案包含“主题”的诗句。
+            </p>
           </TipBox>
 
         </Collapsible>
+
+        <div style={{
+          marginTop: '3rem',
+          padding: '1.5rem',
+          background: '#f8fafc',
+          borderRadius: '8px',
+          border: `1px solid ${COLORS.border}`
+        }}>
+          <h4 style={{
+            margin: '0 0 1rem 0',
+            color: COLORS.heading,
+            fontSize: '1.1rem'
+          }}>总结</h4>
+          <p style={{ margin: '0', whiteSpace: 'normal' }}>
+            本文介绍了在本地CPU环境部署vLLM的两种方式：从源码构建和使用预构建镜像。通过conda管理环境，下载Qwen2-0.5B-Instruct模型后，可通过Docker快速启动服务，并通过API或Python代码进行推理。对于CPU环境，建议选择较小的模型以获得更好的性能。
+          </p>
+        </div>
       </div>
     </DocLayout>
   );

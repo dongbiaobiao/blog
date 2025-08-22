@@ -1,457 +1,336 @@
-import React, { useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import DocLayout from '../DocLayout';
+import { docs } from '../StudyDocs'; // 复用vLLM文档中的docs配置
 
-const SQLAlchemyFastAPIReact = () => {
-  // 组件挂载时自动滚动到顶部
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
+// 新增：统一ID生成函数，与DocLayout保持一致
+const generateHeadingId = (headingText) => {
+  return headingText.toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]/g, '');
+};
+
+// 完全复用Deploying_vLLM_on_Local_CPU.jsx的主题颜色配置
+const COLORS = {
+  primary: '#3b82f6',
+  secondary: '#64748b',
+  accent: '#10b981',
+  dark: '#1e293b',
+  light: '#f1f5f9',
+  body: '#334155',
+  heading: '#0f172a',
+  border: '#e2e8f0',
+  info: '#0ea5e9',
+  warning: '#f59e0b',
+  danger: '#ef4444',
+  success: '#10b981',
+  // LLaMAFactory风格的代码主题
+  codeBg: '#1e293b',
+  codeText: '#e2e8f0'
+};
+
+// 复用vLLM文档的「最后更新时间组件」
+const LastUpdatedTime = () => {
+  const sqlDoc = docs.find(doc => doc.title === 'SQLAlchemy + FastAPI + React 项目教程') || {};
+  const lastUpdated = sqlDoc.lastUpdated || '未知';
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '未知';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
     });
-  }, []);
+  };
 
   return (
-    <DocLayout title="SQLAlchemy + FastAPI + React 项目教程">
-      <p>该项目是一个基于 React 前端和 FastAPI 后端的用户认证与任务管理系统，前端使用 React 框架搭建页面并通过 React Router 实现路由管理，借助 Axios 处理与后端的 HTTP 交互；后端采用 FastAPI 框架构建接口，结合 SQLAlchemy 进行数据库操作（使用 SQLite 作为数据库），通过 JWT 实现用户身份认证，整体实现了用户注册、登录、密码修改、账号注销等核心功能，并预留了任务管理模块的扩展空间。</p>
+    <div style={{
+      textAlign: 'right',
+      color: COLORS.secondary,
+      fontSize: '0.9rem',
+      marginBottom: '1.5rem',
+      fontStyle: 'italic',
+      padding: '0.5rem 0',
+      borderBottom: `1px solid ${COLORS.border}`
+    }}>
+      最后更新时间：{formatDate(lastUpdated)}
+    </div>
+  );
+};
 
-      <hr />
+// 复用vLLM文档的「折叠面板组件」
+const Collapsible = ({ title, children }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div style={{
+      margin: '1.5rem 0',
+      border: `1px solid ${COLORS.border}`,
+      borderRadius: '6px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+      transition: 'all 0.3s ease'
+    }}>
+      <div
+        style={{
+          padding: '1rem 1.25rem',
+          background: COLORS.light,
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: '600',
+          color: COLORS.heading,
+          borderRadius: '6px 6px 0 0',
+          transition: 'background 0.2s ease'
+        }}
+        onClick={() => setIsOpen(!isOpen)}
+        onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
+        onMouseOut={(e) => e.currentTarget.style.background = COLORS.light}
+      >
+        <span>{title}</span>
+        <span style={{
+          transition: 'transform 0.3s ease',
+          color: COLORS.primary,
+          fontWeight: 'bold'
+        }}>
+          {isOpen ? '−' : '+'}
+        </span>
+      </div>
+      <div
+        style={{
+          maxHeight: isOpen ? '2000px' : '0',
+          overflow: 'hidden',
+          transition: 'max-height 0.5s ease',
+          borderTop: isOpen ? `1px solid ${COLORS.border}` : 'none'
+        }}
+      >
+        <div style={{ padding: '1.25rem', backgroundColor: 'white' }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-      <h2>1 安装node.js</h2>
+// 复用vLLM文档的「提示框组件」
+const TipBox = ({ type = 'info', children }) => {
+  const styles = {
+    info: {
+      background: '#eff6ff',
+      borderLeft: `4px solid ${COLORS.info}`,
+      color: '#0369a1'
+    },
+    warning: {
+      background: '#fffbeb',
+      borderLeft: `4px solid ${COLORS.warning}`,
+      color: '#b45309'
+    },
+    danger: {
+      background: '#fee2e2',
+      borderLeft: `4px solid ${COLORS.danger}`,
+      color: '#b91c1c'
+    }
+  };
 
-      <ol>
-        <li>
-          <p>打开浏览器，访问 Node.js 官网：https://nodejs.org/</p>
-        </li>
-        <li>
-          <p>下载 <strong>LTS 版本</strong>（长期支持版，更稳定，适合开发），选择 Windows 系统 64 位 。</p>
-        </li>
-        <li>
-          <p>运行安装包，按照提示完成安装（<strong>勾选 “Add to PATH” 选项</strong>，这样可以在命令行直接使用 <code>node</code>、<code>npm</code>、<code>npx</code>）。</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808155148503.png" alt="node.js安装界面1" style={{ zoom: '33%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808155918937.png" alt="node.js安装界面2" style={{ zoom: '100%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808155936738.png" alt="node.js安装界面3" style={{ zoom: '100%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160050331.png" alt="node.js安装界面4" style={{ zoom: '100%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160419346.png" alt="node.js安装界面5" style={{ zoom: '100%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160403578.png" alt="node.js安装界面6" style={{ zoom: '100%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160448919.png" alt="node.js安装界面7" style={{ zoom: '100%' }} />
-          <p>等待ing...</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160528509.png" alt="node.js安装进度" style={{ zoom: '100%' }} />
-          <p>安装完成</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160558917.png" alt="node.js安装完成" style={{ zoom: '100%' }} />
-        </li>
-        <li>
-          <h4>验证安装是否成功</h4>
-          <ul>
-            <li>关闭之前的命令提示符（CMD）或 PowerShell，<strong>重新打开一个新的窗口</strong>（确保环境变量生效）。</li>
-            <li>执行以下命令，查看版本号（出现版本号说明安装成功）</li>
-          </ul>
-          <pre><code>{`node -v  # 查看 Node.js 版本 
-npm -v   # 查看 npm 版本 
-npx -v   # 查看 npx 版本`}</code></pre>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160747018.png" alt="验证node.js安装" style={{ zoom: '33%' }} />
-        </li>
-        <li>
-          <h4>Node.js环境配置</h4>
-          <p>在<code>D:\\node.js</code>目录下创建两个空的文件夹，分别是<code>node_cache</code>还有<code>node_global</code>文件夹</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160922265.png" alt="创建node缓存和全局文件夹" style={{ zoom: '33%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808161128017.png" alt="文件夹创建完成" style={{ zoom: '33%' }} />
-          <p>设置npm的路径定位到这两个文件下，目的是为了后面node下载一些文件的时候可以下载到D盘这两个文件夹中（全局文件、缓存文件），这样不会占用太多C盘</p>
-          <pre><code>{`npm config set prefix "D:\\node.js\\node_global"
-npm config set cache "D:\\node.js\\node_cache"`}</code></pre>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808161357767.png" alt="npm路径配置" style={{ zoom: '33%' }} />
-          <p>以记事本格式打开.npmrc文件，把下面两行命令放进去</p>
-          <pre><code>{`prefix=D:\\node.js\\node_global
+  const icons = {
+    info: 'ℹ️',
+    warning: '⚠️',
+    danger: '❌'
+  };
 
-cache=D:\\node.js\\node_cache`}</code></pre>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808161846303.png" alt=".npmrc文件配置" style={{ zoom: '33%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808161809730.png" alt=".npmrc文件内容" style={{ zoom: '33%' }} />
-          <p>打开系统环境变量，进行配置，配置截图如下</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808162134919.png" alt="系统环境变量配置" style={{ zoom: '33%' }} />
-          <p>把用户变量下的Path路径中npm修改为D:\nodejs\node_global</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808162619116.png" alt="用户变量配置" style={{ zoom: '100%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808162644970.png" alt="编辑路径" style={{ zoom: '100%' }} />
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808162730088.png" alt="路径配置完成" style={{ zoom: '100%' }} />
-          <p>Pycharm环境配置</p>
-          <p>进入Pycharm的设置中，按照下面步骤：</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808170039109.png" alt="Pycharm配置node.js" style={{ zoom: '33%' }} />
-          <p>编写一个test.js文件</p>
-          <pre><code>{`function add(a, b){
-    return a + b;
-}
+  return (
+    <div style={{
+      ...styles[type],
+      padding: '1rem 1.25rem',
+      margin: '1.25rem 0',
+      borderRadius: '6px',
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '0.75rem'
+    }}>
+      <div style={{ fontSize: '1.25rem', marginTop: '0.1rem' }}>{icons[type]}</div>
+      <div style={{ lineHeight: '1.7' }}>{children}</div>
+    </div>
+  );
+};
 
-console.log(add(1, 2))`}</code></pre>
-          <p>运行test.js文件，可以看到输出3，至此nodejs环境配置成功</p>
-          <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808170305129.png" alt="测试node.js环境" style={{ zoom: '33%' }} />
-        </li>
-      </ol>
+// 复用vLLM文档的「图片组件」
+const ImageViewer = ({ src, alt, style }) => {
+  return (
+    <div style={{
+      ...style,
+      textAlign: 'center',
+      margin: '1.5rem 0',
+      display: 'flex',
+      justifyContent: 'center'
+    }}>
+      <div style={{
+        padding: '0.75rem',
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        border: `1px solid ${COLORS.border}`,
+        maxWidth: '100%'
+      }}>
+        <img
+          src={src}
+          alt={alt}
+          style={{
+            maxWidth: '100%',
+            maxHeight: '600px',
+            borderRadius: '4px'
+          }}
+        />
+        <div style={{
+          marginTop: '0.75rem',
+          fontSize: '0.9rem',
+          color: COLORS.secondary,
+          fontStyle: 'italic'
+        }}>
+          {alt}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-      <h2>2 创建项目</h2>
+// 复用vLLM文档的「代码框组件」（LLaMAFactory风格）
+const CodeBlock = ({ language, children }) => {
+  const [buttonText, setButtonText] = useState('复制代码');
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef(null);
 
-      <p>管理员身份打开cmd，进入项目根目录（<code>SQLAlchemy + FastAPI + React</code>），执行：</p>
-      <p><strong>(如果使用Pycharm，需要使用管理员身份打开)</strong></p>
-      <pre><code>{`# 进入项目根目录（\`SQLAlchemy + FastAPI + React\`）
+  const handleCopy = () => {
+    navigator.clipboard.writeText(children.trim())
+      .then(() => {
+        setButtonText('已复制');
+        setCopied(true);
+
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          setButtonText('复制代码');
+          setCopied(false);
+        }, 3000);
+      })
+      .catch(err => console.error('复制失败:', err));
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const languageMap = {
+    'bash': 'Bash 命令',
+    'python': 'Python 代码',
+    'javascript': 'JavaScript 代码',
+    'json': 'JSON 格式'
+  };
+
+  return (
+    <div style={{
+      backgroundColor: '#1e293b',
+      borderRadius: '6px',
+      margin: '1rem 0 1.5rem 0',
+      overflow: 'hidden',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    }}>
+      <div style={{
+        padding: '0.85rem 1.25rem',
+        fontSize: '0.85rem',
+        color: '#e2e8f0',
+        borderBottom: '1px solid #334155',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        background: '#0f172a',
+      }}>
+        <span style={{ fontWeight: '500' }}>
+          {languageMap[language] || language}
+        </span>
+        <button
+          style={{
+            background: copied ? COLORS.success : '#334155',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '0.35rem 0.75rem',
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem'
+          }}
+          onClick={handleCopy}
+        >
+          <span>{copied ? '✓' : '📋'}</span>
+          <span>{buttonText}</span>
+        </button>
+      </div>
+      <div style={{ maxHeight: '500px', overflow: 'auto' }}>
+        <pre style={{ margin: 0 }}>
+          <code style={{
+            padding: '1.25rem',
+            display: 'block',
+            fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace',
+            fontSize: '0.9rem',
+            lineHeight: '1.6',
+            color: '#e2e8f0',
+          }}>
+            {children}
+          </code>
+        </pre>
+      </div>
+    </div>
+  );
+};
+
+const SQLAlchemyFastAPIReact = () => {
+  // 复用vLLM文档的「组件挂载滚动到顶部」逻辑
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // 代码内容（按文档需求整理）
+  const installNodeCommands = `# 验证Node.js安装
+node -v  # 查看Node.js版本
+npm -v   # 查看npm版本
+npx -v   # 查看npx版本
+
+# 配置npm路径
+npm config set prefix "D:\\node.js\\node_global"
+npm config set cache "D:\\node.js\\node_cache"`;
+
+  const createProjectCommands = `# 进入项目根目录
 cd C:\\Users\\dbb\\Desktop\\SQLAlchemy + FastAPI + React
-# 创建 React 项目 
-npx create-react-app frontend 
-`}</code></pre>
-      <p>使用 Create React App 创建一个新的项目，项目名为 <code>frontend</code>：</p>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808164020313.png" alt="创建React项目" style={{ zoom: '50%' }} />
-      <p>当前项目目录如下</p>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808165211685.png" alt="项目目录结构" style={{ zoom: '33%' }} />
-      <p>App.js 是主组件文件，定义了一个基础的 React 组件，后期主要改这个文件。</p>
-      <p>创建项目后，进入项目目录：</p>
-      <pre><code>{`# 进入前端目录 
-cd frontend 
-`}</code></pre>
-      <p>在项目目录中，运行以下命令来启动开发服务器：</p>
-      <pre><code>{`# 启动前端项目 
-npm start
-`}</code></pre>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808165409938.png" alt="启动前端项目" style={{ zoom: '50%' }} />
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250808165401938.png" alt="前端项目启动成功" style={{ zoom: '33%' }} />
-      <pre><code>{`# 安装所需依赖 
-npm install axios react-router-dom bootstrap 
-`}</code></pre>
 
-      <h2>3 前端框架</h2>
+# 创建React前端项目
+npx create-react-app frontend
 
-      <h3>3.1 项目启动</h3>
-      <p>进入<code>C:\\Users\\dbb\\Desktop\\SQLAlchemy + FastAPI + React\\frontend</code>目录中，运行<code>npm start</code>，启动前端项目。</p>
-      <pre><code>{`cd C:\\Users\\dbb\\Desktop\\SQLAlchemy + FastAPI + React\\frontend
+# 进入前端目录
+cd frontend
 
-npm start`}</code></pre>
+# 安装依赖
+npm install axios react-router-dom bootstrap
 
-      <h3>3.2 项目结构</h3>
-      <pre><code>{`前端项目
-├── public/                 # 静态资源
-├── src/
-│   ├── pages/              # 页面组件
-│   │   ├── Login.js        # 登录页面
-│   │   ├── Register.js     # 注册页面
-│   │   ├── ForgotPassword.js  # 忘记密码页面
-│   │   └── TaskList.js     # 任务列表页面（登录后主页）
-│   ├── components/         # 通用组件（预留）
-│   │   ├── PrivateRoute.js # 路由保护组件（控制登录权限）
-│   │   └── Modal.js        # 弹窗组件（如注销确认弹窗）
-│   ├── App.js              # 根组件（路由配置）
-│   ├── index.js            # 入口文件
-│   └── utils/              # 工具函数（预留）
-│       └── api.js          # API请求封装（如Axios配置）`}</code></pre>
+# 启动前端项目
+npm start`;
 
-      <h2>4 后端框架</h2>
+  const backendStartCommands = `# 进入后端目录
+cd C:\\Users\\dbb\\Desktop\\SQLAlchemy + FastAPI + React\\backend
 
-      <h3>4.1 项目启动</h3>
-      <p>进入<code>C:\\Users\\dbb\\Desktop\\SQLAlchemy + FastAPI + React\\backend</code>中，运行<code>uvicorn src.main:app --reload</code>，启动后端项目。</p>
-      <pre><code>{`cd C:\\Users\\dbb\\Desktop\\SQLAlchemy + FastAPI + React\\backend
+# 启动FastAPI后端
+uvicorn src.main:app --reload`;
 
-uvicorn src.main:app --reload`}</code></pre>
-      <p>注意：在 FastAPI 后端中配置跨域资源共享（CORS）中间件，解决前端（通常运行在不同域名 / 端口）与后端通信时的跨域限制问题，具体说明如下：</p>
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>配置项</th>
-            <th>作用</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>allow_origins=["http://localhost:3000"]</code></td>
-            <td>允许来自 <code>http://localhost:3000</code>（前端开发服务器地址）的请求访问后端接口，防止因域名 / 端口不同导致的跨域拦截。</td>
-          </tr>
-          <tr>
-            <td><code>allow_credentials=True</code></td>
-            <td>允许前端请求携带认证信息（如 cookies、JWT 令牌等），确保登录状态等身份信息能正常传递。</td>
-          </tr>
-          <tr>
-            <td><code>allow_methods=["*"]</code></td>
-            <td>允许所有 HTTP 方法（GET、POST、PUT、DELETE 等）的跨域请求，无需逐个指定。</td>
-          </tr>
-          <tr>
-            <td><code>allow_headers=["*"]</code></td>
-            <td>允许前端请求携带任意类型的请求头（如 <code>Authorization</code> 认证头、自定义头信息等）。</td>
-          </tr>
-          <tr>
-            <td><code>expose_headers=["*"]</code></td>
-            <td>允许前端访问后端响应中的所有头信息，确保前端能获取到后端返回的自定义响应头（如分页信息、令牌等）。</td>
-          </tr>
-        </tbody>
-      </table>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812164144308.png" alt="CORS配置" style={{ zoom: '33%' }} />
-
-      <h3>4.2 项目结构</h3>
-      <pre><code>{`后端项目
-├── src/
-│   ├── main.py             # 主程序入口（路由定义）
-│   ├── database.py         # 数据库配置（连接、会话创建）
-│   ├── models.py           # 数据库模型
-│   │   └── User            # 用户表模型（id、username、密码哈希等）
-│   ├── schemas.py          # Pydantic模型（请求/响应数据格式）
-│   │   ├── UserCreate      # 注册请求模型
-│   │   ├── UserResponse    # 用户信息响应模型
-│   │   └── Token           # 登录令牌响应模型
-│   ├── crud.py             # 数据库操作函数
-│   │   ├── create_user     # 创建用户
-│   │   ├── get_user_by_username  # 通过用户名查询用户
-│   │   ├── update_user_password  # 更新用户密码
-│   │   └── delete_user     # 删除用户
-│   ├── auth.py             # 认证相关功能
-│   │   ├── get_password_hash     # 密码哈希处理
-│   │   ├── verify_password       # 密码验证
-│   │   ├── create_access_token   # 生成JWT令牌
-│   │   └── get_current_user      # 获取当前登录用户（依赖注入）
-│   └── dependencies.py     # 依赖项（如数据库会话依赖）
-└── sql_app.db              # SQLite数据库文件`}</code></pre>
-
-      <h2>5 前后端联调</h2>
-
-      <h3>5.1 注册用户(/register)</h3>
-
-      <h4>5.1.1 接口说明</h4>
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>信息</th>
-            <th>详情</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>请求方式</strong></td>
-            <td><code>POST</code></td>
-          </tr>
-          <tr>
-            <td><strong>URL</strong></td>
-            <td><code>http://127.0.0.1:8000/register</code></td>
-          </tr>
-          <tr>
-            <td><strong>参数</strong></td>
-            <td>
-              - <code>username</code>：用户名（字符串，必填，唯一）<br/>
-              - <code>password</code>：密码（字符串，必填）
-            </td>
-          </tr>
-          <tr>
-            <td><strong>请求体示例</strong></td>
-            <td>
-              <code>json</code> 格式包含两个字段：<br/>
-              - username: 'dbb'<br/>
-              - password: 'dbb'
-            </td>
-          </tr>
-          <tr>
-            <td><strong>响应示例</strong></td>
-            <td>
-              <code>json</code> 格式包含三个字段：<br/>
-              - id: 1<br/>
-              - username: 'dbb'<br/>
-              - created_at: '2025-8-12T03:15:27'
-            </td>
-          </tr>
-          <tr>
-            <td><strong>异常</strong></td>
-            <td>- 400：用户名已存在 - 422：参数缺失（如未填用户名或密码）</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h4>5.1.2 实例</h4>
-      <ul>
-        <li>下图为注册成功</li>
-      </ul>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812152757693.png" alt="注册成功示例" style={{ zoom: '33%' }} />
-      <ul>
-        <li>下图注册失败（已注册）</li>
-      </ul>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812152811732.png" alt="注册失败示例" style={{ zoom: '33%' }} />
-
-      <h3>5.2 登录获取令牌（/login）</h3>
-
-      <h4>5.2.1 接口说明</h4>
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>信息</th>
-            <th>详情</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>请求方式</strong></td>
-            <td><code>POST</code></td>
-          </tr>
-          <tr>
-            <td><strong>URL</strong></td>
-            <td><code>http://127.0.0.1:8000/login</code></td>
-          </tr>
-          <tr>
-            <td><strong>参数</strong></td>
-            <td>
-              - <code>username</code>：用户名（字符串，必填）<br/>
-              - <code>password</code>：密码（字符串，必填）
-            </td>
-          </tr>
-          <tr>
-            <td><strong>请求体示例</strong></td>
-            <td>
-              <code>json</code> 格式包含两个字段：<br/>
-              - username: 'dbb'<br/>
-              - password: 'dbb'
-            </td>
-          </tr>
-          <tr>
-            <td><strong>响应示例</strong></td>
-            <td>
-              <code>json</code> 格式包含两个字段：<br/>
-              - access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'<br/>
-              - token_type: 'bearer'
-            </td>
-          </tr>
-          <tr>
-            <td><strong>异常</strong></td>
-            <td>- 401：用户名或密码错误 - 422：参数缺失</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h4>5.2.2 实例</h4>
-      <ul>
-        <li>下图为登录成功</li>
-      </ul>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812153223880.png" alt="登录成功示例" style={{ zoom: '33%' }} />
-      <ul>
-        <li>下图为登录失败（账户名或密码错误）</li>
-      </ul>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812153337129.png" alt="登录失败示例" style={{ zoom: '33%' }} />
-
-      <h3>5.3 查询当前用户（/users/me）</h3>
-
-      <h4>5.3.1 接口说明</h4>
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>信息</th>
-            <th>详情</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>请求方式</strong></td>
-            <td><code>GET</code></td>
-          </tr>
-          <tr>
-            <td><strong>URL</strong></td>
-            <td><code>http://127.0.0.1:8000/users/me</code></td>
-          </tr>
-          <tr>
-            <td><strong>请求头</strong></td>
-            <td><code>Authorization: Bearer &lt;access_token&gt;</code>（登录后获取的令牌）</td>
-          </tr>
-          <tr>
-            <td><strong>响应示例</strong></td>
-            <td>
-              <code>json</code> 格式包含三个字段：<br/>
-              - id: 9<br/>
-              - username: 'dbb'<br/>
-              - created_at: '2025-08-12T07:32:04'
-            </td>
-          </tr>
-          <tr>
-            <td><strong>异常</strong></td>
-            <td>- 401：令牌无效或已过期 - 404：用户不存在</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>5.4 修改密码（/users/me/password）</h3>
-
-      <h4>5.4.1 接口说明</h4>
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>信息</th>
-            <th>详情</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>请求方式</strong></td>
-            <td><code>POST</code></td>
-          </tr>
-          <tr>
-            <td><strong>URL</strong></td>
-            <td><code>http://127.0.0.1:8000/forgot-password</code></td>
-          </tr>
-          <tr>
-            <td><strong>参数</strong></td>
-            <td>
-              - <code>username</code>：用户名（字符串，必填）<br/>
-              - <code>oldPassword</code>：原密码（字符串，必填）<br/>
-              - <code>newPassword</code>：新密码（字符串，必填）
-            </td>
-          </tr>
-          <tr>
-            <td><strong>请求体示例</strong></td>
-            <td>
-              <code>json</code> 格式包含三个字段：<br/>
-              - username: 'testuser'<br/>
-              - oldPassword: 'testpass123'<br/>
-              - newPassword: 'newpass456'
-            </td>
-          </tr>
-          <tr>
-            <td><strong>响应示例</strong></td>
-            <td><code>json</code> 格式包含一个字段：detail: '密码修改成功'</td>
-          </tr>
-          <tr>
-            <td><strong>异常</strong></td>
-            <td>- 400：用户不存在 / 原密码错误 / 原密码与新密码相同 - 422：参数缺失</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>5.5 删除用户（/users/me）</h3>
-
-      <h4>5.5.1 接口说明</h4>
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>信息</th>
-            <th>详情</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>请求方式</strong></td>
-            <td><code>DELETE</code></td>
-          </tr>
-          <tr>
-            <td><strong>URL</strong></td>
-            <td><code>http://127.0.0.1:8000/users/me</code></td>
-          </tr>
-          <tr>
-            <td><strong>请求头</strong></td>
-            <td><code>Authorization: Bearer xxx.xxx.xxx</code></td>
-          </tr>
-          <tr>
-            <td><strong>响应示例</strong></td>
-            <td><code>json</code> 格式包含一个字段：detail: '用户删除成功'</td>
-          </tr>
-          <tr>
-            <td><strong>异常</strong></td>
-            <td>- 401：令牌无效 - 400：删除失败（如数据库错误）</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h2>6 前端页面关键代码示例</h2>
-
-      <h3>6.1 登录页面(Login.js)关键代码</h3>
-      <pre><code>{`import React, { useState } from 'react';
+  const loginCode = `import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  // 存储表单输入值 - 正确使用对象存储但分别访问属性
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -459,18 +338,15 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // 处理输入变化 - 更新对象的特定属性
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 处理表单提交
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    // 验证输入 - 检查每个属性而非整个对象
     if (!formData.username || !formData.password) {
       setError('请输入用户名和密码');
       return;
@@ -478,7 +354,6 @@ const Login = () => {
     
     try {
       const response = await axios.post('http://localhost:8000/login', formData);
-      // 存储令牌并跳转
       localStorage.setItem('token', response.data.access_token);
       navigate('/tasks');
     } catch (err) {
@@ -486,29 +361,33 @@ const Login = () => {
     }
   };
 
+
+  
   return (
-    <div className="login-container">
-      <h2>登录</h2>
+    <div className="container mt-5">
+      <h2>用户登录</h2>
       {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label>用户名</label>
+          <label className="form-label">用户名</label>
           <input
             type="text"
             name="username"
-            value={formData.username}  // 访问具体属性
+            value={formData.username}
             onChange={handleChange}
             className="form-control"
+            required
           />
         </div>
         <div className="mb-3">
-          <label>密码</label>
+          <label className="form-label">密码</label>
           <input
             type="password"
             name="password"
-            value={formData.password}  // 访问具体属性
+            value={formData.password}
             onChange={handleChange}
             className="form-control"
+            required
           />
         </div>
         <button type="submit" className="btn btn-primary">登录</button>
@@ -517,10 +396,9 @@ const Login = () => {
   );
 };
 
-export default Login;`}</code></pre>
+export default Login;`;
 
-      <h3>6.2 注册页面(Register.js)关键代码</h3>
-      <pre><code>{`import React, { useState } from 'react';
+  const registerCode = `import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -551,42 +429,38 @@ const Register = () => {
     try {
       await axios.post('http://localhost:8000/register', formData);
       setSuccess('注册成功，即将跳转到登录页');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      if (err.response && err.response.status === 400) {
-        setError('用户名已被注册');
-      } else {
-        setError('注册失败，请稍后再试');
-      }
+      setError(err.response?.data?.detail || '注册失败，请稍后再试');
     }
   };
 
   return (
-    <div className="register-container">
-      <h2>注册</h2>
+    <div className="container mt-5">
+      <h2>用户注册</h2>
       {error && <div className="alert alert-danger">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label>用户名</label>
+          <label className="form-label">用户名</label>
           <input
             type="text"
             name="username"
-            value={formData.username}  // 访问具体属性
+            value={formData.username}
             onChange={handleChange}
             className="form-control"
+            required
           />
         </div>
         <div className="mb-3">
-          <label>密码</label>
+          <label className="form-label">密码</label>
           <input
             type="password"
             name="password"
-            value={formData.password}  // 访问具体属性
+            value={formData.password}
             onChange={handleChange}
             className="form-control"
+            required
           />
         </div>
         <button type="submit" className="btn btn-primary">注册</button>
@@ -595,18 +469,414 @@ const Register = () => {
   );
 };
 
-export default Register;`}</code></pre>
+export default Register;`;
 
-      <h2>7 最终效果展示</h2>
+  // 新增：目录结构定义
+  const headings = [
+    "1. 安装Node.js",
+    "2. 创建项目结构",
+    "3. 后端核心实现",
+    "4. 前端核心实现",
+    "5. 前后端联调",
+    "6. 最终效果展示"
+  ];
 
-      <h3>7.1 登录页面</h3>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812143037942.png" alt="登录页面" style={{ zoom: '50%' }} />
+  return (
+    <DocLayout title="用户认证系统前端实现"  headings={headings}>
+      <div style={{
+        maxWidth: '1000px',
+        margin: '0 auto',
+        padding: '0 1.5rem',
+        color: COLORS.body,
+        lineHeight: '1.8'
+      }}>
+        {/* 复用vLLM文档的「最后更新时间」组件 */}
+        {/*<LastUpdatedTime />*/}
 
-      <h3>7.2 注册页面</h3>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812144959247.png" alt="注册页面" style={{ zoom: '50%' }} />
+        {/* 复用vLLM文档的「引言卡片」样式 */}
+        <div style={{
+          background: '#f8fafc',
+          borderLeft: `4px solid ${COLORS.accent}`,
+          padding: '1rem 1.25rem',
+          marginBottom: '2rem',
+          borderRadius: '0 6px 6px 0',
+        }}>
+          <p style={{
+            lineHeight: '1.7',
+            fontSize: '1.05rem',
+            color: '#334155',
+            margin: 0
+          }}>
+            本文档详细介绍SQLAlchemy + FastAPI + React全栈项目的用户认证系统搭建流程，包括环境安装配置、前后端项目结构创建，以及登录、注册页面的具体开发代码和功能实现，涉及表单处理、接口请求、JWT 令牌存储与路由跳转等核心逻辑，，适合初学者快速掌握全栈开发核心流程。
+          </p>
+        </div>
 
-      <h3>7.3 忘记密码页面</h3>
-      <img src="/Fig/SQLAlchemy+FastAPI+React/image-20250812150252126.png" alt="忘记密码页面" style={{ zoom: '50%' }} />
+        {/* 章节标题样式：完全复用vLLM文档的标题设计 */}
+        <h3  id={generateHeadingId("1. 安装Node.js")}
+          style={{
+          margin: '2rem 0 1.25rem 0',
+          color: COLORS.primary,
+          borderLeft: `4px solid ${COLORS.primary}`,
+          paddingLeft: '0.75rem',
+          fontSize: '1.4rem',
+          fontWeight: '600'
+        }}>1. 安装Node.js</h3>
+        <p style={{ marginBottom: '1.25rem' }}>
+          前端基于React开发，需先安装Node.js环境（包含npm包管理工具），确保前端项目正常构建与运行。
+        </p>
+
+        <Collapsible title="1.1 下载与安装">
+          <p>访问Node.js官网下载LTS版本，安装时需勾选「Add to PATH」选项，确保命令行可直接调用node、npm命令：</p>
+          <ol style={{ lineHeight: '1.8', marginLeft: '1.5rem' }}>
+            <li>打开浏览器，访问 <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.primary }}>Node.js官网</a></li>
+            <li>下载「Windows 64位 LTS版本」</li>
+            <li>运行安装包，按提示完成安装（务必勾选「Add to PATH」）</li>
+          </ol>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250808155148503.png"
+            alt="Node.js安装界面"
+          />
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160558917.png"
+            alt="Node.js安装完成"
+          />
+        </Collapsible>
+
+        <Collapsible title="1.2 验证与配置">
+          <p>安装完成后验证版本，并配置npm全局路径（避免占用C盘空间）：</p>
+          <CodeBlock language="bash">
+{installNodeCommands}
+          </CodeBlock>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250808160747018.png"
+            alt="Node.js版本验证"
+          />
+          <TipBox type="info">
+            <p>环境变量配置说明：</p>
+            <ul style={{ margin: '0.5rem 0 0 1.5rem' }}>
+              <li>用户变量Path：将默认npm路径修改为 <code>D:\\node.js\\node_global</code></li>
+              <li>系统变量Node_PATH（可选）：新增 <code>D:\\node.js\\node_global\\node_modules</code></li>
+            </ul>
+          </TipBox>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250808162134919.png"
+            alt="系统环境变量配置"
+          />
+        </Collapsible>
+
+        {/* 分隔线：复用vLLM文档的渐变分隔线 */}
+        <div style={{
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
+          margin: '2rem 0'
+        }}></div>
+
+        <h3   id={generateHeadingId("2. 创建项目结构")}
+          style={{
+          margin: '2rem 0 1.25rem 0',
+          color: COLORS.primary,
+          borderLeft: `4px solid ${COLORS.primary}`,
+          paddingLeft: '0.75rem',
+          fontSize: '1.4rem',
+          fontWeight: '600'
+        }}>2. 创建项目结构</h3>
+        <p style={{ marginBottom: '1.25rem' }}>
+          项目分为frontend（前端React）和backend（后端FastAPI）两个目录，需分别创建并初始化。
+        </p>
+
+        <Collapsible title="2.1 创建前端项目">
+          <p>使用Create React App快速创建前端项目，安装核心依赖：</p>
+          <CodeBlock language="bash">
+{createProjectCommands}
+          </CodeBlock>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250808164020313.png"
+            alt="创建React项目"
+          />
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250808165401938.png"
+            alt="前端项目启动成功"
+          />
+        </Collapsible>
+
+        <Collapsible title="2.2 项目目录结构">
+          <p>前端核心目录说明（与后端目录对应）：</p>
+          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '300px' }}>
+              <h5 style={{ color: COLORS.heading }}>前端目录（frontend）</h5>
+              <CodeBlock language="bash">
+{`src/
+├── pages/              # 页面组件
+│   ├── Login.js        # 登录页面
+│   ├── Register.js     # 注册页面
+│   └── TaskList.js     # 任务列表（登录后主页）
+├── components/         # 通用组件
+│   ├── PrivateRoute.js # 路由保护
+│   └── Modal.js        # 弹窗组件
+├── utils/              # 工具函数
+│   └── api.js          # Axios请求封装
+├── App.js              # 根组件（路由配置）
+└── index.js            # 入口文件`}
+              </CodeBlock>
+            </div>
+            <div style={{ flex: 1, minWidth: '300px' }}>
+              <h5 style={{ color: COLORS.heading }}>后端目录（backend）</h5>
+              <CodeBlock language="bash">
+{`src/
+├── main.py             # 主程序（路由）
+├── database.py         # 数据库配置
+├── models.py           # 数据模型（User表）
+├── schemas.py          # Pydantic模型
+├── crud.py             # 数据库操作
+├── auth.py             # JWT认证
+└── dependencies.py     # 依赖注入
+└── sql_app.db          # SQLite数据库`}
+              </CodeBlock>
+            </div>
+          </div>
+        </Collapsible>
+
+        <div style={{
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
+          margin: '2rem 0'
+        }}></div>
+
+        <h3 id={generateHeadingId("3. 后端核心实现")}
+          style={{
+          margin: '2rem 0 1.25rem 0',
+          color: COLORS.primary,
+          borderLeft: `4px solid ${COLORS.primary}`,
+          paddingLeft: '0.75rem',
+          fontSize: '1.4rem',
+          fontWeight: '600'
+        }}>3. 后端核心实现</h3>
+        <p style={{ marginBottom: '1.25rem' }}>
+          后端基于FastAPI构建，结合SQLAlchemy实现数据库操作，通过JWT实现用户认证，需先启动后端服务确保接口可用。
+        </p>
+
+        <Collapsible title="3.1 启动后端服务">
+          <p>进入backend目录，通过uvicorn启动FastAPI开发服务器：</p>
+          <CodeBlock language="bash">
+{backendStartCommands}
+          </CodeBlock>
+            <p>后端依赖安装：需先安装核心包</p>
+            <CodeBlock language="bash">
+pip install fastapi uvicorn sqlalchemy pydantic python-jose[cryptography] passlib[bcrypt]
+            </CodeBlock>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250812164144308.png"
+            alt="FastAPI CORS配置"
+          />
+        </Collapsible>
+
+        <Collapsible title="3.2 核心接口设计">
+          <p>后端提供用户认证相关接口，支持注册、登录、密码修改等功能：</p>
+          <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: COLORS.light }}>
+                <th style={{ border: `1px solid ${COLORS.border}` }}>接口路径</th>
+                <th style={{ border: `1px solid ${COLORS.border}` }}>请求方式</th>
+                <th style={{ border: `1px solid ${COLORS.border}` }}>功能描述</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ border: `1px solid ${COLORS.border}` }}><code>/register</code></td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>POST</td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>用户注册</td>
+              </tr>
+              <tr>
+                <td style={{ border: `1px solid ${COLORS.border}` }}><code>/login</code></td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>POST</td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>用户登录（获取JWT令牌）</td>
+              </tr>
+              <tr>
+                <td style={{ border: `1px solid ${COLORS.border}` }}><code>/users/me</code></td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>GET</td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>查询当前登录用户信息</td>
+              </tr>
+              <tr>
+                <td style={{ border: `1px solid ${COLORS.border}` }}><code>/forgot-password</code></td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>POST</td>
+                <td style={{ border: `1px solid ${COLORS.border}` }}>修改用户密码</td>
+              </tr>
+            </tbody>
+          </table>
+        </Collapsible>
+
+        <div style={{
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
+          margin: '2rem 0'
+        }}></div>
+
+        <h3 id={generateHeadingId("4. 前端核心实现")}
+          style={{
+          margin: '2rem 0 1.25rem 0',
+          color: COLORS.primary,
+          borderLeft: `4px solid ${COLORS.primary}`,
+          paddingLeft: '0.75rem',
+          fontSize: '1.4rem',
+          fontWeight: '600'
+        }}>4. 前端核心实现</h3>
+        <p style={{ marginBottom: '1.25rem' }}>
+          前端基于React Router实现路由管理，Axios处理HTTP请求，核心页面包括登录、注册、忘记密码等。
+        </p>
+
+        <Collapsible title="4.1 登录页面（Login.js）">
+          <p>实现用户登录逻辑，包含表单验证、JWT令牌存储：</p>
+          <CodeBlock language="javascript">
+{loginCode}
+          </CodeBlock>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250812143037942.png"
+            alt="登录页面效果"
+          />
+        </Collapsible>
+
+        <Collapsible title="4.2 注册页面（Register.js）">
+          <p>实现用户注册逻辑，包含重复用户名检测：</p>
+          <CodeBlock language="javascript">
+{registerCode}
+          </CodeBlock>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250812144959247.png"
+            alt="注册页面效果"
+          />
+        </Collapsible>
+
+        <div style={{
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
+          margin: '2rem 0'
+        }}></div>
+
+        <h3 id={generateHeadingId("5. 前后端联调")}
+          style={{
+          margin: '2rem 0 1.25rem 0',
+          color: COLORS.primary,
+          borderLeft: `4px solid ${COLORS.primary}`,
+          paddingLeft: '0.75rem',
+          fontSize: '1.4rem',
+          fontWeight: '600'
+        }}>5. 前后端联调</h3>
+        <p style={{ marginBottom: '1.25rem' }}>
+          联调需确保前端请求地址与后端一致，处理跨域问题，并验证各接口功能正常。
+        </p>
+
+        <Collapsible title="5.1 接口联调示例">
+          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '300px' }}>
+              <h5 style={{ color: COLORS.heading }}>注册接口联调</h5>
+              <p>请求体示例：</p>
+              <CodeBlock language="json">
+{`{
+  "username": "dbb",
+  "password": "dbb123"
+}`}
+              </CodeBlock>
+              <p style={{ marginTop: '1rem' }}>成功响应：</p>
+              <CodeBlock language="json">
+{`{
+  "id": 1,
+  "username": "dbb",
+  "created_at": "2025-08-12T07:32:04"
+}`}
+              </CodeBlock>
+            </div>
+            <div style={{ flex: 1, minWidth: '300px' }}>
+              <h5 style={{ color: COLORS.heading }}>登录接口联调</h5>
+              <p>请求体示例：</p>
+              <CodeBlock language="json">
+{`{
+  "username": "dbb",
+  "password": "dbb123"
+}`}
+              </CodeBlock>
+              <p style={{ marginTop: '1rem' }}>成功响应：</p>
+              <CodeBlock language="json">
+{`{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}`}
+              </CodeBlock>
+            </div>
+          </div>
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250812152757693.png"
+            alt="注册接口联调成功"
+          />
+          <ImageViewer
+            src="/Fig/SQLAlchemy+FastAPI+React/image-20250812153223880.png"
+            alt="登录接口联调成功"
+          />
+        </Collapsible>
+
+        <Collapsible title="5.2 常见问题处理">
+          <TipBox type="danger">
+            <p>跨域问题：</p>
+            <p>需在FastAPI后端配置CORS中间件，允许前端地址（http://localhost:3000）的请求。</p>
+          </TipBox>
+          <TipBox type="warning">
+            <p>令牌失效问题：</p>
+            <p>JWT令牌过期后需重新登录，前端可通过拦截器统一处理401错误，跳转登录页。</p>
+          </TipBox>
+          <TipBox type="info">
+            <p>密码安全：</p>
+            <p>后端需对密码进行哈希处理（使用bcrypt算法），禁止存储明文密码。</p>
+          </TipBox>
+        </Collapsible>
+
+        <div style={{
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
+          margin: '2rem 0'
+        }}></div>
+
+        <h3 id={generateHeadingId("6. 最终效果展示")}
+          style={{
+          margin: '2rem 0 1.25rem 0',
+          color: COLORS.primary,
+          borderLeft: `4px solid ${COLORS.primary}`,
+          paddingLeft: '0.75rem',
+          fontSize: '1.4rem',
+          fontWeight: '600'
+        }}>6. 最终效果展示</h3>
+
+        <Collapsible title="6.1 功能页面效果">
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div style={{ maxWidth: '45%' }}>
+              <h5 style={{ color: COLORS.heading, textAlign: 'center' }}>登录页面</h5>
+              <ImageViewer
+                src="/Fig/SQLAlchemy+FastAPI+React/image-20250812143037942.png"
+                alt="登录页面"
+              />
+            </div>
+            <div style={{ maxWidth: '45%' }}>
+              <h5 style={{ color: COLORS.heading, textAlign: 'center' }}>注册页面</h5>
+              <ImageViewer
+                src="/Fig/SQLAlchemy+FastAPI+React/image-20250812144959247.png"
+                alt="注册页面"
+              />
+            </div>
+            <div style={{ maxWidth: '45%' }}>
+              <h5 style={{ color: COLORS.heading, textAlign: 'center' }}>忘记密码页面</h5>
+              <ImageViewer
+                src="/Fig/SQLAlchemy+FastAPI+React/image-20250812150252126.png"
+                alt="忘记密码页面"
+              />
+            </div>
+            <div style={{ maxWidth: '45%' }}>
+              <h5 style={{ color: COLORS.heading, textAlign: 'center' }}>任务列表页面（登录后）</h5>
+              <ImageViewer
+                src="/Fig/SQLAlchemy+FastAPI+React/image-20250812150827727.png"
+                alt="任务列表页面"
+              />
+            </div>
+          </div>
+        </Collapsible>
+      </div>
     </DocLayout>
   );
 };

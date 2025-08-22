@@ -1,33 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import docs from './Docs/json/docs.json'; // 导入JSON数据
+import docs from './Docs/json/docs.json';
 
-const DocLayout = ({ children }) => {
+const DocLayout = ({ children, headings = [] }) => {  // 接收标题数据
   const location = useLocation();
   const navigate = useNavigate();
   const [shouldScroll, setShouldScroll] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  // 存储当前文档的完整数据
   const [currentDoc, setCurrentDoc] = useState(null);
+  const [activeHeading, setActiveHeading] = useState('');
+  const headingRefs = useRef({});
 
-  // 监听滚动事件，用于导航栏样式变化
+  // 监听滚动事件，用于导航栏样式和当前标题高亮
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+
+      // 检测当前可见的标题
+      const currentPosition = window.scrollY + 100;
+
+      for (const [id, ref] of Object.entries(headingRefs.current).reverse()) {
+        if (ref && ref.offsetTop <= currentPosition) {
+          setActiveHeading(id);
+          break;
+        }
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [headings]);
 
-  // 用路由传递的docId，匹配JSON中的文档
+  // 匹配当前文档
   useEffect(() => {
-    // 从路由state中获取跳转时携带的docId
     const docId = location.state?.docId;
     if (docId) {
-      // 用id精准查找（id是唯一的，不会重复）
       const matchedDoc = docs.find(doc => doc.id === docId);
-      setCurrentDoc(matchedDoc); // 找到后存入状态
+      setCurrentDoc(matchedDoc);
     }
   }, [location.state?.docId]);
 
@@ -42,7 +51,7 @@ const DocLayout = ({ children }) => {
     }
   }, [location, shouldScroll]);
 
-  // 处理返回操作，携带分类状态
+  // 处理返回操作
   const handleBack = () => {
     const activeCategory = location.state?.activeCategory;
     navigate('/#study-docs', {
@@ -50,7 +59,39 @@ const DocLayout = ({ children }) => {
     });
   };
 
-  // 加载状态
+  // 处理目录项点击
+  const scrollToHeading = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // 注册标题引用
+  const registerHeading = (id, ref) => {
+    if (id && ref) {
+      headingRefs.current[id] = ref;
+    }
+  };
+
+  // 处理子元素，为标题添加ID和引用
+  const renderChildrenWithHeadings = React.Children.map(children, (child) => {
+    if (child.type === 'h3' && child.props.children && typeof child.props.children === 'string') {
+      // 生成唯一ID
+      const headingText = child.props.children.trim();
+      const headingId = headingText.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '');
+
+      // 注册标题引用
+      return React.cloneElement(child, {
+        id: headingId,
+        ref: (ref) => registerHeading(headingId, ref)
+      });
+    }
+    return child;
+  });
+
   if (!currentDoc) {
     return <div className="container mx-auto py-20 text-center">加载中...</div>;
   }
@@ -70,8 +111,9 @@ const DocLayout = ({ children }) => {
         </div>
       </header>
 
-      {/* 固定返回按钮 */}
+      {/* 固定返回按钮和目录 */}
       <div className="fixed z-50">
+        {/* 移动端返回按钮 */}
         <button
           onClick={handleBack}
           className="fixed bottom-6 right-6 md:hidden
@@ -84,16 +126,47 @@ const DocLayout = ({ children }) => {
           <i className="fa fa-arrow-left"></i>
         </button>
 
-        <button
-          onClick={handleBack}
-          className="hidden md:flex
-                    items-center ml-[140px] mt-8
-                    text-indigo-600 hover:text-indigo-800
-                    text-lg transition-colors"
-        >
-          <i className="fa fa-arrow-left mr-2"></i>
-          <span>返回文档列表</span>
-        </button>
+        {/* 桌面端侧边栏：返回按钮 + 目录 */}
+        <div className="hidden md:block ml-[40px] mt-8 w-[220px]">
+          <button
+            onClick={handleBack}
+            className="flex items-center mb-6
+                      text-indigo-600 hover:text-indigo-800
+                      text-lg transition-colors"
+          >
+            <i className="fa fa-arrow-left mr-2"></i>
+            <span>返回文档列表</span>
+          </button>
+
+          {/* 目录区域 */}
+          {headings.length > 0 && (
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
+                目录
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {headings.map((heading, index) => {
+                  const headingId = heading.toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^\w-]/g, '');
+
+                  return (
+                    <li key={index}>
+                      <button
+                        onClick={() => scrollToHeading(headingId)}
+                        className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 transition-colors ${
+                          activeHeading === headingId ? 'text-indigo-600 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        {heading}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 主要内容区域 */}
@@ -131,13 +204,13 @@ const DocLayout = ({ children }) => {
           {/* 文档内容区域 */}
           <div className="px-6 sm:px-8 py-8">
             <div className="prose max-w-none prose-indigo">
-              {children}
+              {renderChildrenWithHeadings}
             </div>
           </div>
 
           {/* 页脚区域 */}
           <div className="px-6 sm:px-8 py-4 border-t border-gray-100 bg-gray-50 text-center text-gray-500 text-sm">
-            <p>© 2025 技术文档中心 | 持续更新中</p>
+            <p>© 2025 技术文档中心 | 持续更新中</p >
           </div>
         </div>
 

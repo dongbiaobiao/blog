@@ -7,7 +7,7 @@ import StudyDocs from './components/StudyDocs';
 // 导入所有独立文档组件
 import Deploying_vLLM_on_Local_CPU from './components/Docs/Deploying_vLLM_on_Local_CPU';
 import SQLAlchemyFastAPIReact from './components/Docs/SQLAlchemy+FastAPI+React';
-import NodejsMiddleware from './components/Docs/NodejsMiddleware';
+import Local_Deployment_and_Inference_of_PPOCRv5 from './components/Docs/Local_Deployment_and_Inference_of_PP-OCRv5';
 import PythonDataAnalysis from './components/Docs/PythonDataAnalysis';
 import LLaMAFactory from './components/Docs/LLaMA-Factory';
 import DocPlaceholder from './components/DocPlaceholder';
@@ -84,7 +84,7 @@ const AppContent = () => {
         {/* StudyDocs文档跳转页面链接 */}
         <Route path="/docs/react-lifecycle" element={<Deploying_vLLM_on_Local_CPU />} />
         <Route path="/docs/mysql-index-optimization" element={<SQLAlchemyFastAPIReact />} />
-        <Route path="/docs/nodejs-middleware" element={<NodejsMiddleware />} />
+        <Route path="/docs/nodejs-middleware" element={<Local_Deployment_and_Inference_of_PPOCRv5 />} />
         <Route path="/docs/python-data-analysis" element={<PythonDataAnalysis />} />
         <Route path="/docs/css-flexbox" element={<LLaMAFactory />} />
 

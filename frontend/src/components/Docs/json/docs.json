@@ -13,27 +13,27 @@
   },
   {
     "id": 2,
-    "title": "MySQL 索引优化步骤",
-    "category": "database",
+    "title": "用户认证系统前端实现",
+    "category": "frontend",
     "date": "2025-06-10",
     "lastUpdated": "2025-06-12",
     "color": "bg-yellow-500",
-    "tags": ["MySQL", "数据库", "优化"],
+    "tags": ["React", "FastAPI", "SQLAlchemy", "JWT"],
     "link": "/docs/mysql-index-optimization",
     "image": "https://picsum.photos/seed/mysql-index/600/300",
-    "description": "通过实际案例介绍MySQL索引的工作原理及优化技巧。"
+    "description": "基于 React、FastAPI、SQLAlchemy 技术栈的用户认证系统前端实现展开，详细介绍了环境安装配置、前后端项目结构创建，以及登录、注册页面的具体开发代码和功能实现，涉及表单处理、接口请求、JWT 令牌存储与路由跳转等核心逻辑。"
   },
   {
     "id": 3,
-    "title": "Node.js 中间件开发指南",
-    "category": "backend",
-    "date": "2025-05-28",
-    "lastUpdated": "2025-06-01",
+    "title": "OCR 本地部署与 PP-OCRv5 推理实践",
+    "category": "ai",
+    "date": "2025-08-15",
+    "lastUpdated": "2025-08-15",
     "color": "bg-green-500",
-    "tags": ["Node.js", "Express", "后端"],
+    "tags": ["PaddlePaddle", "PaddleOCR", "PP-OCRv5"],
     "link": "/docs/nodejs-middleware",
     "image": "https://picsum.photos/seed/node-middleware/600/300",
-    "description": "深入探讨Node.js中间件的设计模式和实现原理。"
+    "description": "详细介绍了在本地环境中通过 conda 创建环境，安装 PaddlePaddle 3.0 和 PaddleOCR，下载 PaddleOCR 项目并进行 PP-OCRv5 模型的命令行与 Python 脚本推理测试相关步骤。"
   },
   {
     "id": 4,
@@ -58,5 +58,17 @@
     "link": "/docs/css-flexbox",
     "image": "https://picsum.photos/seed/css-flexbox/600/300",
     "description": "详细介绍了使用 LLaMA-Factory 工具对 Qwen2.5 模型进行环境搭建、微调（含脚本与可视化两种方式）及模型合并部署的完整流程。"
+  },
+  {
+    "id": 6,
+    "title": "用户认证系统前端实现",
+    "category": "database",
+    "date": "2025-06-10",
+    "lastUpdated": "2025-06-12",
+    "color": "bg-yellow-500",
+    "tags": ["MySQL", "数据库", "优化"],
+    "link": "/docs/mysql-index-optimization",
+    "image": "https://picsum.photos/seed/mysql-index/600/300",
+    "description": "通过实际案例介绍MySQL索引的工作原理及优化技巧。"
   }
 ]
