@@ -1,6 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DocLayout from '../DocLayout';
-import { docs } from '../StudyDocs'; // 假设此导入存在于vLLM文件中
+import { docs } from '../StudyDocs';
+// 导入通用UI配置（删除组件内硬编码的COLORS）
+import uiConfig from './json/uiConfig.json';
+
+// 文档专属常量（与文档强绑定，不放入通用UI配置）
+const DOC_TITLE = "OCR本地部署与PP-OCRv5推理实践";
+const TARGET_DOC_TITLE = "OCR本地部署与PP-OCRv5推理实践";
+const HEADINGS = [
+  "进入conda环境",
+  "1. 安装PaddlePaddle 3.0",
+  "2. 安装paddleocr",
+  "3. 下载PaddleOCR项目",
+  "4. PP-OCRv5推理测试",
+  "5. 模型部署"
+];
 
 // 新增：统一ID生成函数，与DocLayout保持一致
 const generateHeadingId = (headingText) => {
@@ -9,28 +23,9 @@ const generateHeadingId = (headingText) => {
     .replace(/[^\w-]/g, '');
 };
 
-// 与vLLM页面保持一致的主题颜色配置
-const COLORS = {
-  primary: '#3b82f6',
-  secondary: '#64748b',
-  accent: '#10b981',
-  dark: '#1e293b',
-  light: '#f1f5f9',
-  body: '#334155',
-  heading: '#0f172a',
-  border: '#e2e8f0',
-  info: '#0ea5e9',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  success: '#10b981',
-  // 代码主题保持一致
-  codeBg: '#1e293b',
-  codeText: '#e2e8f0'
-};
-
-// 显示文档最后更新时间的组件
+// 显示文档最后更新时间的组件（UI参数来自uiConfig）
 const LastUpdatedTime = () => {
-  const ocrDoc = docs.find(doc => doc.title === 'OCR本地部署与PP-OCRv5推理实践');
+  const ocrDoc = docs.find(doc => doc.title === TARGET_DOC_TITLE);
   const lastUpdated = ocrDoc ? ocrDoc.lastUpdated : '未知';
 
   const formatDate = (dateString) => {
@@ -46,64 +41,67 @@ const LastUpdatedTime = () => {
   return (
     <div style={{
       textAlign: 'right',
-      color: COLORS.secondary,
+      color: uiConfig.colors.secondary,
       fontSize: '0.9rem',
       marginBottom: '1.5rem',
       fontStyle: 'italic',
       padding: '0.5rem 0',
-      borderBottom: `1px solid ${COLORS.border}`
+      borderBottom: `1px solid ${uiConfig.colors.border}`
     }}>
       最后更新时间：{formatDate(lastUpdated)}
     </div>
   );
 };
 
-// 折叠面板组件 - 与vLLM页面相同
+// 折叠面板组件（UI参数来自uiConfig）
 const Collapsible = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <div style={{
-      margin: '1.5rem 0',
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: '6px',
+      margin: uiConfig.dimensions.collapsibleMargin,
+      border: `1px solid ${uiConfig.colors.border}`,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
       boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
       transition: 'all 0.3s ease'
     }}>
       <div
         style={{
-          padding: '1rem 1.25rem',
-          background: COLORS.light,
+          padding: uiConfig.dimensions.collapsibleHeaderPadding,
+          background: uiConfig.colors.light,
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           fontWeight: '600',
-          color: COLORS.heading,
-          borderRadius: '6px 6px 0 0',
+          color: uiConfig.colors.heading,
+          borderRadius: `${uiConfig.dimensions.codeBlockBorderRadius} ${uiConfig.dimensions.codeBlockBorderRadius} 0 0`,
           transition: 'background 0.2s ease'
         }}
         onClick={() => setIsOpen(!isOpen)}
         onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
-        onMouseOut={(e) => e.currentTarget.style.background = COLORS.light}
+        onMouseOut={(e) => e.currentTarget.style.background = uiConfig.colors.light}
       >
         <span>{title}</span>
         <span style={{
           transition: 'transform 0.3s ease',
-          color: COLORS.primary,
+          color: uiConfig.colors.primary,
           fontWeight: 'bold'
         }}>
-          {isOpen ? '−' : '+'}
+          {isOpen ? uiConfig.controls.collapsibleIcons.open : uiConfig.controls.collapsibleIcons.close}
         </span>
       </div>
       <div
         style={{
-          maxHeight: isOpen ? '2000px' : '0',
+          maxHeight: isOpen ? uiConfig.controls.collapsibleMaxHeightOpen : uiConfig.controls.collapsibleMaxHeightClose,
           overflow: 'hidden',
           transition: 'max-height 0.5s ease',
-          borderTop: isOpen ? `1px solid ${COLORS.border}` : 'none'
+          borderTop: isOpen ? `1px solid ${uiConfig.colors.border}` : 'none'
         }}
       >
-        <div style={{ padding: '1.25rem', backgroundColor: 'white' }}>
+        <div style={{
+          padding: uiConfig.dimensions.collapsibleContentPadding,
+          backgroundColor: 'white'
+        }}>
           {children}
         </div>
       </div>
@@ -111,64 +109,64 @@ const Collapsible = ({ title, children }) => {
   );
 };
 
-// 提示框组件 - 与vLLM页面相同
+// 提示框组件（UI参数来自uiConfig）
 const TipBox = ({ type = 'info', children }) => {
   const styles = {
     info: {
       background: '#eff6ff',
-      borderLeft: `4px solid ${COLORS.info}`,
+      borderLeft: `4px solid ${uiConfig.colors.info}`,
       color: '#0369a1'
     },
     warning: {
       background: '#fffbeb',
-      borderLeft: `4px solid ${COLORS.warning}`,
+      borderLeft: `4px solid ${uiConfig.colors.warning}`,
       color: '#b45309'
     },
     danger: {
       background: '#fee2e2',
-      borderLeft: `4px solid ${COLORS.danger}`,
+      borderLeft: `4px solid ${uiConfig.colors.danger}`,
       color: '#b91c1c'
     }
-  };
-
-  const icons = {
-    info: 'ℹ️',
-    warning: '⚠️',
-    danger: '❌'
   };
 
   return (
     <div style={{
       ...styles[type],
-      padding: '1rem 1.25rem',
-      margin: '1.25rem 0',
-      borderRadius: '6px',
+      padding: uiConfig.dimensions.tipBoxPadding,
+      margin: uiConfig.dimensions.tipBoxMargin,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
       display: 'flex',
       alignItems: 'flex-start',
-      gap: '0.75rem'
+      gap: uiConfig.dimensions.tipBoxGap
     }}>
-      <div style={{ fontSize: '1.25rem', marginTop: '0.1rem' }}>{icons[type]}</div>
-      <div style={{ lineHeight: '1.7' }}>{children}</div>
+      <div style={{
+        fontSize: '1.25rem',
+        marginTop: '0.1rem'
+      }}>{uiConfig.controls.tipBoxIcons[type]}</div>
+      <div style={{
+        lineHeight: '1.7',
+        color: styles[type].color
+      }}>{children}</div>
     </div>
   );
 };
 
-// 图片组件 - 与vLLM页面相同
-const ImageViewer = ({ src, alt, style }) => {
+// 图片组件（UI参数来自uiConfig）
+const ImageViewer = ({ src, alt, style = {} }) => {
   return (
     <div style={{
       ...style,
       textAlign: 'center',
-      margin: '1.5rem 0',
+      margin: uiConfig.dimensions.imageViewerMargin,
       display: 'flex',
       justifyContent: 'center'
     }}>
       <div style={{
-        padding: '0.75rem',
+        padding: uiConfig.dimensions.imageViewerPadding,
         backgroundColor: 'white',
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        border: `1px solid ${COLORS.border}`,
+        border: `1px solid ${uiConfig.colors.border}`,
         maxWidth: '100%'
       }}>
         <img
@@ -176,14 +174,14 @@ const ImageViewer = ({ src, alt, style }) => {
           alt={alt}
           style={{
             maxWidth: '100%',
-            maxHeight: '600px',
+            maxHeight: uiConfig.dimensions.imageViewerMaxHeight,
             borderRadius: '4px'
           }}
         />
         <div style={{
-          marginTop: '0.75rem',
+          marginTop: uiConfig.dimensions.imageViewerPadding,
           fontSize: '0.9rem',
-          color: COLORS.secondary,
+          color: uiConfig.colors.secondary,
           fontStyle: 'italic'
         }}>
           {alt}
@@ -193,9 +191,9 @@ const ImageViewer = ({ src, alt, style }) => {
   );
 };
 
-// 代码框组件 - 与vLLM页面相同，带复制功能
+// 代码框组件（UI参数来自uiConfig，带复制功能）
 const CodeBlock = ({ language, children }) => {
-  const [buttonText, setButtonText] = useState('复制代码');
+  const [buttonText, setButtonText] = useState(uiConfig.controls.copyButtonTexts.default);
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef(null);
 
@@ -203,7 +201,7 @@ const CodeBlock = ({ language, children }) => {
     // 复制代码到剪贴板
     navigator.clipboard.writeText(children.trim())
       .then(() => {
-        setButtonText('已复制');
+        setButtonText(uiConfig.controls.copyButtonTexts.copied);
         setCopied(true);
 
         // 清除之前的定时器
@@ -213,12 +211,14 @@ const CodeBlock = ({ language, children }) => {
 
         // 3秒后恢复按钮文本
         timeoutRef.current = setTimeout(() => {
-          setButtonText('复制代码');
+          setButtonText(uiConfig.controls.copyButtonTexts.default);
           setCopied(false);
-        }, 3000);
+        }, uiConfig.controls.copyTimeout);
       })
       .catch(err => {
         console.error('复制失败:', err);
+        setButtonText(uiConfig.controls.copyButtonTexts.failed);
+        setTimeout(() => setButtonText(uiConfig.controls.copyButtonTexts.default), uiConfig.controls.failedTimeout);
       });
   };
 
@@ -231,26 +231,19 @@ const CodeBlock = ({ language, children }) => {
     };
   }, []);
 
-  // 语言名称映射表
-  const languageMap = {
-    'bash': 'Bash 命令',
-    'python': 'Python 代码',
-    'yaml': 'YAML 配置'
-  };
-
   return (
     <div style={{
-      backgroundColor: '#1e293b',
-      borderRadius: '6px',
-      margin: '1rem 0 1.5rem 0',
+      backgroundColor: uiConfig.colors.codeBg,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
+      margin: uiConfig.dimensions.codeBlockMargin,
       overflow: 'hidden',
       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
     }}>
       {/* 固定的代码头部 */}
       <div style={{
-        padding: '0.85rem 1.25rem',
-        fontSize: '0.85rem',
-        color: '#e2e8f0',
+        padding: uiConfig.dimensions.codeHeaderPadding,
+        fontSize: uiConfig.dimensions.codeHeaderFontSize,
+        color: uiConfig.colors.codeText,
         borderBottom: '1px solid #334155',
         display: 'flex',
         justifyContent: 'space-between',
@@ -261,21 +254,21 @@ const CodeBlock = ({ language, children }) => {
         background: '#0f172a',
       }}>
         <span style={{ fontWeight: '500' }}>
-          {languageMap[language] || language}
+          {uiConfig.controls.languageMap[language] || language}
         </span>
         <button
           style={{
-            background: copied ? COLORS.success : '#334155',
+            background: copied ? uiConfig.colors.success : '#334155',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
-            padding: '0.35rem 0.75rem',
+            borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
+            padding: uiConfig.dimensions.copyButtonPadding,
             cursor: 'pointer',
-            fontSize: '0.8rem',
+            fontSize: uiConfig.dimensions.copyButtonFontSize,
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.35rem'
+            gap: uiConfig.dimensions.copyButtonGap
           }}
           onClick={handleCopy}
         >
@@ -285,17 +278,17 @@ const CodeBlock = ({ language, children }) => {
       </div>
       {/* 可滚动的代码内容 */}
       <div style={{
-        maxHeight: '500px',
+        maxHeight: uiConfig.controls.codeMaxHeight,
         overflow: 'auto'
       }}>
         <pre style={{ margin: 0 }}>
           <code style={{
-            padding: '1.25rem',
+            padding: uiConfig.dimensions.codeContentPadding,
             display: 'block',
             fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace',
-            fontSize: '0.9rem',
-            lineHeight: '1.6',
-            color: '#e2e8f0',
+            fontSize: uiConfig.dimensions.codeContentFontSize,
+            lineHeight: uiConfig.dimensions.codeContentLineHeight,
+            color: uiConfig.colors.codeText,
           }}>
             {children}
           </code>
@@ -307,35 +300,25 @@ const CodeBlock = ({ language, children }) => {
 
 const Local_Deployment_and_Inference_of_PPOCRv5 = () => {
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: uiConfig.controls.scrollBehavior });
   }, []);
 
-    // 新增：目录结构定义
-  const headings = [
-    "进入conda环境",
-    "1. 安装PaddlePaddle 3.0",
-    "2. 安装paddleocr",
-    "3. 下载PaddleOCR项目",
-    "4. PP-OCRv5推理测试"
-  ];
-
-
   return (
-    <DocLayout title="OCR本地部署与PP-OCRv5推理实践" headings={headings}>
+    <DocLayout title={DOC_TITLE} headings={HEADINGS}>
       <div style={{
-        maxWidth: '1000px',
+        maxWidth: uiConfig.dimensions.containerMaxWidth,
         margin: '0 auto',
-        padding: '0 1.5rem',
-        color: COLORS.body,
+        padding: uiConfig.dimensions.containerPadding,
+        color: uiConfig.colors.body,
         lineHeight: '1.8'
       }}>
         {/* 介绍性提示框 */}
         <div style={{
           background: '#f8fafc',
-          borderLeft: `4px solid ${COLORS.accent}`,
-          padding: '1rem 1.25rem',
+          borderLeft: `4px solid ${uiConfig.colors.accent}`,
+          padding: uiConfig.dimensions.tipBoxPadding,
           marginBottom: '2rem',
-          borderRadius: '0 6px 6px 0',
+          borderRadius: `0 ${uiConfig.dimensions.codeBlockBorderRadius} ${uiConfig.dimensions.codeBlockBorderRadius} 0`,
         }}>
           <p style={{
             lineHeight: '1.7',
@@ -349,17 +332,19 @@ const Local_Deployment_and_Inference_of_PPOCRv5 = () => {
 
         {/*<LastUpdatedTime />*/}
 
-        {/* 章节标题使用vLLM风格 */}
-        <h3 id={generateHeadingId("进入conda环境")}
-        style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>进入conda环境</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+        {/* 进入conda环境 */}
+        <h3
+          id={generateHeadingId("进入conda环境")}
+          style={{
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH3,
+            fontWeight: '600'
+          }}
+        >进入conda环境</h3>
+        <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>
           首先激活之前创建的conda环境：
         </p>
 
@@ -376,20 +361,23 @@ conda activate dbb
         {/* 分隔线 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
-        <h3  id={generateHeadingId("1. 安装PaddlePaddle 3.0")}
-            style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>1 安装PaddlePaddle 3.0</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+        {/* 1. 安装PaddlePaddle 3.0 */}
+        <h3
+          id={generateHeadingId("1. 安装PaddlePaddle 3.0")}
+          style={{
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH3,
+            fontWeight: '600'
+          }}
+        >1 安装PaddlePaddle 3.0</h3>
+        <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>
           在conda环境中，使用以下命令安装GPU版本的PaddlePaddle（PP-OCR依赖3.0及以上版本）：
         </p>
 
@@ -397,7 +385,7 @@ conda activate dbb
           <CodeBlock language="bash">
 python -m pip install paddlepaddle-gpu==3.0.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
           </CodeBlock>
-            如果您的环境没有GPU，可以安装CPU版本：
+            <p style={{ margin: `${uiConfig.dimensions.paragraphMarginBottom} 0` }}>如果您的环境没有GPU，可以安装CPU版本：</p>
             <CodeBlock language="bash">
 python -m pip install paddlepaddle==3.0.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
             </CodeBlock>
@@ -407,22 +395,26 @@ python -m pip install paddlepaddle==3.0.0 -i https://www.paddlepaddle.org.cn/pac
           />
         </Collapsible>
 
+        {/* 分隔线 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
-        <h3 id={generateHeadingId("2. 安装paddleocr")}
+        {/* 2. 安装paddleocr */}
+        <h3
+          id={generateHeadingId("2. 安装paddleocr")}
           style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>2 安装paddleocr</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH3,
+            fontWeight: '600'
+          }}
+        >2 安装paddleocr</h3>
+        <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>
           使用pip安装paddleocr包：
         </p>
 
@@ -436,22 +428,26 @@ pip install paddleocr
           />
         </Collapsible>
 
+        {/* 分隔线 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
-        <h3  id={generateHeadingId("3. 下载PaddleOCR项目")}
+        {/* 3. 下载PaddleOCR项目 */}
+        <h3
+          id={generateHeadingId("3. 下载PaddleOCR项目")}
           style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>3 下载PaddleOCR项目</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH3,
+            fontWeight: '600'
+          }}
+        >3 下载PaddleOCR项目</h3>
+        <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>
           克隆PaddleOCR项目代码库并安装相关依赖：
         </p>
 
@@ -476,29 +472,33 @@ pip install -r requirements.txt
         </Collapsible>
 
         <Collapsible title="创建输出目录">
-          <p>进入PaddleOCR目录并创建output目录用于保存结果：</p>
+          <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>进入PaddleOCR目录并创建output目录用于保存结果：</p>
           <ImageViewer
             src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250814170458350.png"
             alt="图6：创建output目录用于存储识别结果"
           />
         </Collapsible>
 
+        {/* 分隔线 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
-        <h3  id={generateHeadingId("4. PP-OCRv5推理测试")}
+        {/* 4. PP-OCRv5推理测试 */}
+        <h3
+          id={generateHeadingId("4. PP-OCRv5推理测试")}
           style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
-          fontWeight: '600'
-        }}>4 PP-OCRv5推理测试</h3>
-        <p style={{ marginBottom: '1.25rem' }}>
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH3,
+            fontWeight: '600'
+          }}
+        >4 PP-OCRv5推理测试</h3>
+        <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>
           PP-OCRv5是PP-OCR新一代文字识别解决方案，聚焦于多场景、多文字类型的文字识别。
           支持简体中文、中文拼音、繁体中文、英文、日文5大主流文字类型，
           升级了中英复杂手写体、竖排文本、生僻字等多种挑战性场景的识别能力。
@@ -507,8 +507,8 @@ pip install -r requirements.txt
 
         <h4 style={{
           margin: '1.5rem 0 1rem 0',
-          color: COLORS.heading,
-          fontSize: '1.2rem',
+          color: uiConfig.colors.heading,
+          fontSize: uiConfig.dimensions.headingFontSizeH4,
           fontWeight: '600'
         }}>4.1 命令行方式</h4>
 
@@ -523,56 +523,73 @@ paddleocr ocr -i https://paddle-model-ecology.bj.bcebos.com/paddlex/imgs/demo_im
 --device gpu:0
           </CodeBlock>
 
-          <ul style={{ margin: '1rem 0 1rem 1.5rem', lineHeight: '1.8' }}>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>paddleocr ocr</code>：启动 PaddleOCR 的文字识别功能（检测 + 识别）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>-i [URL]</code>：指定输入图片（可以是在线示例图，也可替换为本地路径）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>--use_doc_orientation_classify False</code>：关闭文档方向检测（适合无旋转图片）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>--use_doc_unwarping False</code>：关闭文档弯曲矫正（适合平整图片）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>--use_textline_orientation False</code>：关闭文本行方向检测（适合横向文字）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>--save_path ./output</code>：识别结果（标注图 + 文本）保存到<code>./output</code>目录</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>--device gpu:0</code>：使用第 0 号 GPU 运行（需 GPU 环境，无 GPU 可改为<code>cpu</code>）</li>
+          <ul style={{
+            margin: uiConfig.dimensions.listMargin,
+            lineHeight: '1.8'
+          }}>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>paddleocr ocr</code>：启动 PaddleOCR 的文字识别功能（检测 + 识别）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>-i [URL]</code>：指定输入图片（可以是在线示例图，也可替换为本地路径）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>--use_doc_orientation_classify False</code>：关闭文档方向检测（适合无旋转图片）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>--use_doc_unwarping False</code>：关闭文档弯曲矫正（适合平整图片）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>--use_textline_orientation False</code>：关闭文本行方向检测（适合横向文字）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>--save_path ./output</code>：识别结果（标注图 + 文本）保存到<code>./output</code>目录
+            </li>
+            <li>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>--device gpu:0</code>：使用第 0 号 GPU 运行（需 GPU 环境，无 GPU 可改为<code>cpu</code>）
+            </li>
           </ul>
 
           <ImageViewer
@@ -582,7 +599,7 @@ paddleocr ocr -i https://paddle-model-ecology.bj.bcebos.com/paddlex/imgs/demo_im
         </Collapsible>
 
         <Collapsible title="4.1.2 运行结果">
-          <p>命令行输出结果示例：</p>
+          <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>命令行输出结果示例：</p>
           <CodeBlock language="bash">
 {`{'res': {'input_path': '/home/ubuntu/.paddlex/predict_input/general_ocr_002.png', 'page_index': None, 'model_settings': {'use_doc_preprocessor': True, 'use_textline_orientation': False}, 'doc_preprocessor_res': {'input_path': None, 'page_index': None, 'model_settings': {'use_doc_orientation_classify': False, 'use_doc_unwarping': False}, 'angle': -1}, 'dt_polys': array([[[152,  22],
         ...,
@@ -604,47 +621,54 @@ paddleocr ocr -i https://paddle-model-ecology.bj.bcebos.com/paddlex/imgs/demo_im
        [ 99, ..., 480]], shape=(33, 4), dtype=int16)}}`}
           </CodeBlock>
 
-          <p>若指定了<code style={{
-            background: `${COLORS.light}`,
-            padding: '0.15rem 0.35rem',
-            borderRadius: '3px',
-            color: COLORS.primary,
-            fontSize: '0.9rem'
-          }}>save_path</code>，则会保存可视化结果在该目录下：</p>
+          <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>
+            若指定了<code style={{
+              background: `${uiConfig.colors.light}`,
+              padding: '0.15rem 0.35rem',
+              borderRadius: '3px',
+              color: uiConfig.colors.primary,
+              fontSize: '0.9rem'
+            }}>save_path</code>，则会保存可视化结果在该目录下：
+          </p>
           <ImageViewer
             src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812085825736.png"
             alt="图8：OCR识别结果可视化示例"
           />
 
-          <p>其他图片识别效果：</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', margin: '1rem 0' }}>
-              <ImageViewer
-                src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812091912328.png"
-                alt="图9：不同场景OCR识别效果示例1"
-                style={{ margin: 0 }}
-              />
-              <ImageViewer
-                src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812092256505.png"
-                alt="图10：不同场景OCR识别效果示例2"
-                style={{ margin: 0 }}
-              />
-              <ImageViewer
-                src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812092654160.png"
-                alt="图11：不同场景OCR识别效果示例3"
-                style={{ margin: 0 }}
-              />
-              <ImageViewer
-                src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812092750097.png"
-                alt="图12：不同场景OCR识别效果示例4"
-                style={{ margin: 0 }}
-              />
-            </div>
+          <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>其他图片识别效果：</p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: uiConfig.dimensions.gridGap,
+            margin: '1rem 0'
+          }}>
+            <ImageViewer
+              src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812091912328.png"
+              alt="图9：不同场景OCR识别效果示例1"
+              style={{ margin: 0 }}
+            />
+            <ImageViewer
+              src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812092256505.png"
+              alt="图10：不同场景OCR识别效果示例2"
+              style={{ margin: 0 }}
+            />
+            <ImageViewer
+              src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812092654160.png"
+              alt="图11：不同场景OCR识别效果示例3"
+              style={{ margin: 0 }}
+            />
+            <ImageViewer
+              src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250812092750097.png"
+              alt="图12：不同场景OCR识别效果示例4"
+              style={{ margin: 0 }}
+            />
+          </div>
         </Collapsible>
 
         <h4 style={{
           margin: '1.5rem 0 1rem 0',
-          color: COLORS.heading,
-          fontSize: '1.2rem',
+          color: uiConfig.colors.heading,
+          fontSize: uiConfig.dimensions.headingFontSizeH4,
           fontWeight: '600'
         }}>4.2 Python脚本文件</h4>
 
@@ -668,61 +692,78 @@ for res in result:
     res.save_to_json("output")
           </CodeBlock>
 
-          <ul style={{ margin: '1rem 0 1rem 1.5rem', lineHeight: '1.8' }}>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>use_doc_orientation_classify=False</code>：不启用文档方向分类（不自动判断文档旋转角度）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>use_doc_unwarping=False</code>：不启用文档矫正（不对弯曲文档进行平整处理）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>use_textline_orientation=False</code>：不启用文本行方向检测（不单独判断每行文字的旋转角度）</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>input="..."</code>：指定待识别的图片路径</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>res.print()</code>：在控制台打印识别结果</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>res.save_to_img("output")</code>：将标注识别结果的图片保存到output目录</li>
-            <li><code style={{
-              background: `${COLORS.light}`,
-              padding: '0.15rem 0.35rem',
-              borderRadius: '3px',
-              color: COLORS.primary,
-              fontSize: '0.9rem'
-            }}>res.save_to_json("output")</code>：将识别结果以JSON格式保存到output目录</li>
+          <ul style={{
+            margin: uiConfig.dimensions.listMargin,
+            lineHeight: '1.8'
+          }}>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>use_doc_orientation_classify=False</code>：不启用文档方向分类（不自动判断文档旋转角度）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>use_doc_unwarping=False</code>：不启用文档矫正（不对弯曲文档进行平整处理）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>use_textline_orientation=False</code>：不启用文本行方向检测（不单独判断每行文字的旋转角度）
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>input="..."</code>：指定待识别的图片路径
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>res.print()</code>：在控制台打印识别结果
+            </li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>res.save_to_img("output")</code>：将标注识别结果的图片保存到output目录
+            </li>
+            <li>
+              <code style={{
+                background: `${uiConfig.colors.light}`,
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                color: uiConfig.colors.primary,
+                fontSize: '0.9rem'
+              }}>res.save_to_json("output")</code>：将识别结果以JSON格式保存到output目录
+            </li>
           </ul>
         </Collapsible>
 
         <Collapsible title="4.2.2 运行结果">
-          <p>脚本输出结果示例：</p>
+          <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>脚本输出结果示例：</p>
           <CodeBlock language="bash">
 {`{'res': {'input_path': '/home/ubuntu/dbb/OCR/PaddleOCR/tests/test_files/table.jpg', 'page_index': None, 'model_settings': {'use_doc_preprocessor': True, 'use_textline_orientation': False}, 'doc_preprocessor_res': {'input_path': None, 'page_index': None, 'model_settings': {'use_doc_orientation_classify': False, 'use_doc_unwarping': False}, 'angle': -1}, 'dt_polys': array([[[235,   6],
         ...,
@@ -742,43 +783,50 @@ for res in result:
    		[446, ..., 122]], shape=(12, 4), dtype=int16)}}`}
           </CodeBlock>
 
-          <p>可视化结果：</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', margin: '1rem 0' }}>
-              <ImageViewer
-                src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250813085450520.png"
-                alt="图13：Python脚本识别结果示例1"
-                style={{ margin: 0 }}
-              />
-              <ImageViewer
-                src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250813085635513.png"
-                alt="图14：Python脚本识别结果示例2"
-                style={{ margin: 0 }}
-              />
-              <ImageViewer
-                src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250813085746262.png"
-                alt="图15：Python脚本识别结果示例3"
-                style={{ margin: 0 }}
-              />
-            </div>
+          <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>可视化结果：</p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: uiConfig.dimensions.gridGap,
+            margin: '1rem 0'
+          }}>
+            <ImageViewer
+              src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250813085450520.png"
+              alt="图13：Python脚本识别结果示例1"
+              style={{ margin: 0 }}
+            />
+            <ImageViewer
+              src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250813085635513.png"
+              alt="图14：Python脚本识别结果示例2"
+              style={{ margin: 0 }}
+            />
+            <ImageViewer
+              src="/Fig/Local_Deployment_and_Inference_of_PP-OCRv5/image-20250813085746262.png"
+              alt="图15：Python脚本识别结果示例3"
+              style={{ margin: 0 }}
+            />
+          </div>
         </Collapsible>
 
+        {/* 分隔线 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
+        {/* 5 模型部署 */}
         <h3 style={{
-          margin: '2rem 0 1.25rem 0',
-          color: COLORS.primary,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.4rem',
+          margin: uiConfig.dimensions.headingMargin,
+          color: uiConfig.colors.primary,
+          borderLeft: `4px solid ${uiConfig.colors.primary}`,
+          paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+          fontSize: uiConfig.dimensions.headingFontSizeH3,
           fontWeight: '600'
         }}>5 模型部署</h3>
 
         <Collapsible title="5.1 模型转换成ONNX">
-          <p>安装paddle2onnx工具用于模型转换：</p>
+          <p style={{ marginBottom: uiConfig.dimensions.paragraphMarginBottom }}>安装paddle2onnx工具用于模型转换：</p>
           <CodeBlock language="bash">
 paddlex --install paddle2onnx
           </CodeBlock>

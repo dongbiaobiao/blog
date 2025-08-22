@@ -1,47 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
 import DocLayout from '../DocLayout';
 import { docs } from '../StudyDocs';
+// 导入通用UI配置（颜色、尺寸、控件）
+import uiConfig from './json/uiConfig.json';
 
-// 新增：统一ID生成函数，与DocLayout保持一致
+// 文档专属常量（与文档强绑定，不放入通用UI配置）
+const DOC_TITLE = "基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程";
+const TARGET_DOC_TITLE = "基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程";
+const HEADINGS = [
+  "1. 环境安装",
+  "2. 模型微调",
+  "3. 模型部署",
+  "4. 常见问题与解决方案"
+];
+
+// 统一ID生成函数，与DocLayout保持一致
 const generateHeadingId = (headingText) => {
   return headingText.toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^\w-]/g, '');
 };
 
-// 颜色主题配置
-const COLORS = {
-  primary: '#2563eb',       // 主色调：深蓝色
-  secondary: '#4f46e5',     // 辅助色：靛蓝色
-  accent: '#0ea5e9',        // 强调色：亮蓝色
-  success: '#10b981',       // 成功色：绿色
-  warning: '#f59e0b',       // 警告色：橙色
-  danger: '#ef4444',        // 危险色：红色
-  dark: '#1e293b',          // 深色文本
-  medium: '#64748b',        // 中等强度文本
-  light: '#f1f5f9',         // 浅色背景
-  border: '#cbd5e1',        // 边框色
-  textBase: '#334155'       // 基础文本色
-};
-
-// 基础文本样式
-const baseTextStyle = {
-  display: 'block',
-  whiteSpace: 'normal',
-  wordBreak: 'break-word',
-  lineHeight: '1.7',
-  color: COLORS.textBase,
-  margin: '0',
-  padding: '0',
-  visibility: 'visible',
-  opacity: '1',
-  height: 'auto',
-  width: '100%'
-};
-
-// 最后更新时间组件
+// 最后更新时间组件（UI参数来自uiConfig）
 const LastUpdatedTime = () => {
-  const flexboxDoc = docs.find(doc => doc.title === '基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程');
+  const flexboxDoc = docs.find(doc => doc.title === TARGET_DOC_TITLE);
   const lastUpdated = flexboxDoc ? flexboxDoc.lastUpdated : '未知';
 
   const formatDate = (dateString) => {
@@ -56,14 +38,23 @@ const LastUpdatedTime = () => {
 
   return (
     <div style={{
-      ...baseTextStyle,
+      display: 'block',
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      lineHeight: '1.7',
+      margin: '0',
+      padding: '0',
+      visibility: 'visible',
+      opacity: '1',
+      height: 'auto',
+      width: '100%',
       textAlign: 'right',
-      color: COLORS.medium,
+      color: uiConfig.colors.medium,
       fontSize: '0.9rem',
       marginBottom: '1rem',
       fontStyle: 'italic',
       padding: '0.5rem 0',
-      borderBottom: `1px solid ${COLORS.border}`,
+      borderBottom: `1px solid ${uiConfig.colors.border}`,
       zIndex: 10
     }}>
       最后更新时间：{formatDate(lastUpdated)}
@@ -71,14 +62,34 @@ const LastUpdatedTime = () => {
   );
 };
 
-// 段落组件
+// 段落组件（UI参数来自uiConfig）
 const Paragraph = ({ children, style = {} }) => (
   <div style={{
-    ...baseTextStyle,
-    marginBottom: '1rem'
+    display: 'block',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
+    lineHeight: '1.7',
+    color: uiConfig.colors.textBase,
+    margin: '0',
+    padding: '0',
+    visibility: 'visible',
+    opacity: '1',
+    height: 'auto',
+    width: '100%',
+    marginBottom: uiConfig.dimensions.paragraphMarginBottom
   }}>
     <p style={{
-      ...baseTextStyle,
+      display: 'block',
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      lineHeight: '1.7',
+      color: uiConfig.colors.textBase,
+      margin: '0',
+      padding: '0',
+      visibility: 'visible',
+      opacity: '1',
+      height: 'auto',
+      width: '100%',
       marginBottom: '0',
       ...style
     }}>
@@ -87,52 +98,55 @@ const Paragraph = ({ children, style = {} }) => (
   </div>
 );
 
-// 折叠面板组件
+// 折叠面板组件（UI参数来自uiConfig）
 const Collapsible = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <div style={{
-      margin: '1.5rem 0',
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: '6px',
+      margin: uiConfig.dimensions.collapsibleMargin,
+      border: `1px solid ${uiConfig.colors.border}`,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
       boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
       transition: 'all 0.3s ease'
     }}>
       <div
         style={{
-          padding: '1rem 1.25rem',
-          background: COLORS.light,
+          padding: uiConfig.dimensions.collapsibleHeaderPadding,
+          background: uiConfig.colors.light,
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           fontWeight: '600',
-          color: COLORS.heading,
-          borderRadius: '6px 6px 0 0',
+          color: uiConfig.colors.dark,
+          borderRadius: `${uiConfig.dimensions.codeBlockBorderRadius} ${uiConfig.dimensions.codeBlockBorderRadius} 0 0`,
           transition: 'background 0.2s ease'
         }}
         onClick={() => setIsOpen(!isOpen)}
         onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
-        onMouseOut={(e) => e.currentTarget.style.background = COLORS.light}
+        onMouseOut={(e) => e.currentTarget.style.background = uiConfig.colors.light}
       >
         <span>{title}</span>
         <span style={{
           transition: 'transform 0.3s ease',
-          color: COLORS.primary,
+          color: uiConfig.colors.primary,
           fontWeight: 'bold'
         }}>
-          {isOpen ? '−' : '+'}
+          {isOpen ? uiConfig.controls.collapsibleIcons.open : uiConfig.controls.collapsibleIcons.close}
         </span>
       </div>
       <div
         style={{
-          maxHeight: isOpen ? '2000px' : '0',
+          maxHeight: isOpen ? uiConfig.controls.collapsibleMaxHeightOpen : uiConfig.controls.collapsibleMaxHeightClose,
           overflow: 'hidden',
           transition: 'max-height 0.5s ease',
-          borderTop: isOpen ? `1px solid ${COLORS.border}` : 'none'
+          borderTop: isOpen ? `1px solid ${uiConfig.colors.border}` : 'none'
         }}
       >
-        <div style={{ padding: '1.25rem', backgroundColor: 'white' }}>
+        <div style={{
+          padding: uiConfig.dimensions.collapsibleContentPadding,
+          backgroundColor: 'white'
+        }}>
           {Array.isArray(children) ? children : [children]}
         </div>
       </div>
@@ -140,28 +154,22 @@ const Collapsible = ({ title, children }) => {
   );
 };
 
-// 提示框组件
+// 提示框组件（UI参数来自uiConfig）
 const TipBox = ({ type = 'info', children }) => {
-  const icons = {
-    info: 'ℹ️',
-    warning: '⚠️',
-    danger: '❗'
-  };
-
   const styles = {
     info: {
       background: '#eff6ff',
-      borderLeft: `4px solid ${COLORS.primary}`,
+      borderLeft: `4px solid ${uiConfig.colors.primary}`,
       color: '#1e40af'
     },
     warning: {
       background: '#fffbeb',
-      borderLeft: `4px solid ${COLORS.warning}`,
+      borderLeft: `4px solid ${uiConfig.colors.warning}`,
       color: '#92400e'
     },
     danger: {
       background: '#fee2e2',
-      borderLeft: `4px solid ${COLORS.danger}`,
+      borderLeft: `4px solid ${uiConfig.colors.danger}`,
       color: '#b91c1c'
     }
   };
@@ -169,18 +177,40 @@ const TipBox = ({ type = 'info', children }) => {
   return (
     <div style={{
       ...styles[type],
-      padding: '1rem 1.25rem',
-      margin: '1.25rem 0',
-      borderRadius: '6px',
+      padding: uiConfig.dimensions.tipBoxPadding,
+      margin: uiConfig.dimensions.tipBoxMargin,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
       display: 'flex',
       alignItems: 'flex-start',
-      gap: '0.75rem',
-      ...baseTextStyle,
+      gap: uiConfig.dimensions.tipBoxGap,
+      display: 'block',
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      lineHeight: '1.7',
+      margin: '0',
+      padding: '0',
+      visibility: 'visible',
+      opacity: '1',
+      height: 'auto',
+      width: '100%',
       color: styles[type].color
     }}>
-      <span style={{ fontSize: '1.25rem', marginTop: '-2px', flexShrink: 0 }}>{icons[type]}</span>
+      <span style={{
+        fontSize: '1.25rem',
+        marginTop: '-2px',
+        flexShrink: 0
+      }}>{uiConfig.controls.tipBoxIcons[type]}</span>
       <div style={{
-        ...baseTextStyle,
+        display: 'block',
+        whiteSpace: 'normal',
+        wordBreak: 'break-word',
+        lineHeight: '1.7',
+        margin: '0',
+        padding: '0',
+        visibility: 'visible',
+        opacity: '1',
+        height: 'auto',
+        width: '100%',
         color: styles[type].color,
         flex: 1
       }}>
@@ -190,16 +220,26 @@ const TipBox = ({ type = 'info', children }) => {
   );
 };
 
-// 图片组件
+// 图片组件（UI参数来自uiConfig）
 const ImageViewer = ({ src, alt }) => {
   return (
     <div style={{
-      ...baseTextStyle,
+      display: 'block',
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      lineHeight: '1.7',
+      color: uiConfig.colors.textBase,
+      margin: '0',
+      padding: '0',
+      visibility: 'visible',
+      opacity: '1',
+      height: 'auto',
+      width: '100%',
       textAlign: 'center',
-      margin: '1.5rem 0',
-      padding: '1rem',
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: '6px',
+      margin: uiConfig.dimensions.imageViewerMargin,
+      padding: uiConfig.dimensions.imageViewerPadding,
+      border: `1px solid ${uiConfig.colors.border}`,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
       background: '#f8fafc'
     }}>
       <img
@@ -207,18 +247,28 @@ const ImageViewer = ({ src, alt }) => {
         alt={alt}
         style={{
           maxWidth: '100%',
-          maxHeight: '500px',
-          borderRadius: '4px',
+          maxHeight: uiConfig.dimensions.imageViewerMaxHeight,
+          borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
         }}
         loading="lazy"
       />
       {alt && (
         <p style={{
-          ...baseTextStyle,
-          marginTop: '0.75rem',
+          display: 'block',
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+          lineHeight: '1.7',
+          color: uiConfig.colors.textBase,
+          margin: '0',
+          padding: '0',
+          visibility: 'visible',
+          opacity: '1',
+          height: 'auto',
+          width: '100%',
+          marginTop: uiConfig.dimensions.imageViewerPadding,
           fontSize: '0.9rem',
-          color: COLORS.medium,
+          color: uiConfig.colors.medium,
           fontStyle: 'italic'
         }}>
           {alt}
@@ -228,9 +278,9 @@ const ImageViewer = ({ src, alt }) => {
   );
 };
 
-// 代码框组件
+// 代码框组件（UI参数来自uiConfig）
 const CodeBlock = ({ language, code }) => {
-  const [buttonText, setButtonText] = useState('复制代码');
+  const [buttonText, setButtonText] = useState(uiConfig.controls.copyButtonTexts.default);
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef(null);
 
@@ -238,18 +288,18 @@ const CodeBlock = ({ language, code }) => {
     const codeText = typeof code === 'string' ? code.trim() : '';
     navigator.clipboard.writeText(codeText)
       .then(() => {
-        setButtonText('已复制');
+        setButtonText(uiConfig.controls.copyButtonTexts.copied);
         setCopied(true);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-          setButtonText('复制代码');
+          setButtonText(uiConfig.controls.copyButtonTexts.default);
           setCopied(false);
-        }, 3000);
+        }, uiConfig.controls.copyTimeout);
       })
       .catch(err => {
         console.error('复制失败:', err);
-        setButtonText('复制失败');
-        setTimeout(() => setButtonText('复制代码'), 2000);
+        setButtonText(uiConfig.controls.copyButtonTexts.failed);
+        setTimeout(() => setButtonText(uiConfig.controls.copyButtonTexts.default), uiConfig.controls.failedTimeout);
       });
   };
 
@@ -259,23 +309,17 @@ const CodeBlock = ({ language, code }) => {
     };
   }, []);
 
-  const languageMap = {
-    'bash': 'Bash 命令',
-    'python': 'Python 代码',
-    'yaml': 'YAML 配置'
-  };
-
   return (
     <div style={{
       backgroundColor: '#1e293b',
-      borderRadius: '6px',
-      margin: '1rem 0 1.5rem 0',
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
+      margin: uiConfig.dimensions.codeBlockMargin,
       overflow: 'hidden',
       boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
     }}>
       <div style={{
-        padding: '0.85rem 1.25rem',
-        fontSize: '0.85rem',
+        padding: uiConfig.dimensions.codeHeaderPadding,
+        fontSize: uiConfig.dimensions.codeHeaderFontSize,
         color: '#e2e8f0',
         borderBottom: '1px solid #334155',
         display: 'flex',
@@ -286,21 +330,21 @@ const CodeBlock = ({ language, code }) => {
         background: '#0f172a',
       }}>
         <span style={{ fontWeight: '500' }}>
-          {languageMap[language] || language}
+          {uiConfig.controls.languageMap[language] || language}
         </span>
         <button
           style={{
-            background: copied ? COLORS.success : '#334155',
+            background: copied ? uiConfig.colors.success : '#334155',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
-            padding: '0.35rem 0.75rem',
+            borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
+            padding: uiConfig.dimensions.copyButtonPadding,
             cursor: 'pointer',
-            fontSize: '0.8rem',
+            fontSize: uiConfig.dimensions.copyButtonFontSize,
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.35rem'
+            gap: uiConfig.dimensions.copyButtonGap
           }}
           onClick={handleCopy}
         >
@@ -309,16 +353,16 @@ const CodeBlock = ({ language, code }) => {
         </button>
       </div>
       <div style={{
-        maxHeight: '500px',
+        maxHeight: uiConfig.controls.codeMaxHeight,
         overflow: 'auto'
       }}>
         <pre style={{ margin: 0 }}>
           <code style={{
-            padding: '1.25rem',
+            padding: uiConfig.dimensions.codeContentPadding,
             display: 'block',
             fontFamily: 'SFMono-Regular, Consolas, monospace',
-            fontSize: '0.9rem',
-            lineHeight: '1.6',
+            fontSize: uiConfig.dimensions.codeContentFontSize,
+            lineHeight: uiConfig.dimensions.codeContentLineHeight,
             color: '#e2e8f0',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-all'
@@ -331,52 +375,56 @@ const CodeBlock = ({ language, code }) => {
   );
 };
 
+// 主组件
 const LLaMAFactory = () => {
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: uiConfig.controls.scrollBehavior });
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
     }, 100);
   }, []);
 
-  // 新增：目录结构定义
-  const headings = [
-    "1. 环境安装",
-    "2. 模型微调",
-    "3. 模型部署",
-    "4. 常见问题与解决方案"
-  ];
-
-
   return (
-    <DocLayout title="基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程" headings={headings}>
+    <DocLayout title={DOC_TITLE} headings={HEADINGS}>
       <div style={{
-        maxWidth: '1000px',
+        maxWidth: uiConfig.dimensions.containerMaxWidth,
         margin: '0 auto',
-        padding: '0 1.5rem',
-        color: COLORS.body,
+        padding: uiConfig.dimensions.containerPadding,
+        color: uiConfig.colors.textBase,
         lineHeight: '1.8',
         whiteSpace: 'normal'
       }}>
         {/*<LastUpdatedTime />*/}
 
+        {/* 文档标题 */}
         <h1 style={{
-          ...baseTextStyle,
+          display: 'block',
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+          lineHeight: '1.7',
+          color: uiConfig.colors.textBase,
+          margin: '0',
+          padding: '0',
+          visibility: 'visible',
+          opacity: '1',
+          height: 'auto',
+          width: '100%',
           margin: '2rem 0 1.5rem 0',
-          color: COLORS.dark,
-          fontSize: '2rem',
+          color: uiConfig.colors.dark,
+          fontSize: uiConfig.dimensions.headingFontSizeH1,
           lineHeight: '1.3',
           fontWeight: 700
         }}>
-          {/*基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程*/}
+          基于 LLaMA-Factory 的 Qwen2.5 模型微调全流程
         </h1>
 
+        {/* 文档简介 */}
         <div style={{
           background: '#f8fafc',
-          borderLeft: `4px solid ${COLORS.accent}`,
-          padding: '1rem 1.25rem',
+          borderLeft: `4px solid ${uiConfig.colors.accent}`,
+          padding: uiConfig.dimensions.tipBoxPadding,
           marginBottom: '2rem',
-          borderRadius: '0 6px 6px 0',
+          borderRadius: `0 ${uiConfig.dimensions.codeBlockBorderRadius} ${uiConfig.dimensions.codeBlockBorderRadius} 0`,
           whiteSpace: 'normal'
         }}>
           <p style={{
@@ -391,20 +439,29 @@ const LLaMAFactory = () => {
           </p>
         </div>
 
-
-
-
         {/* 1. 环境安装 */}
-        <h2 id={generateHeadingId("1. 环境安装")}
-            style={{
-          ...baseTextStyle,
-          margin: '2.5rem 0 1.25rem 0',
-          color: COLORS.dark,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.5rem',
-          fontWeight: 600
-        }}>
+        <h2
+          id={generateHeadingId("1. 环境安装")}
+          style={{
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.dark,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH2,
+            fontWeight: 600
+          }}
+        >
           1 环境安装
         </h2>
         <Paragraph>
@@ -480,12 +537,34 @@ print(torch.cuda.device_count())  # 显示可用GPU数量`} />
         </Collapsible>
 
         <Collapsible title="1.7 下载LLaMA-Factory代码">
-          <div style={baseTextStyle}>
+          <div style={{
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%'
+          }}>
             <h5 style={{
-              ...baseTextStyle,
+              display: 'block',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              lineHeight: '1.7',
+              color: uiConfig.colors.textBase,
+              margin: '0',
+              padding: '0',
+              visibility: 'visible',
+              opacity: '1',
+              height: 'auto',
+              width: '100%',
               margin: '1.25rem 0 0.75rem 0',
-              color: COLORS.dark,
-              fontSize: '1.1rem',
+              color: uiConfig.colors.dark,
+              fontSize: uiConfig.dimensions.headingFontSizeH5,
               fontWeight: 600
             }}>1.7.1 克隆LLaMA-Factory仓库到本地</h5>
             <Paragraph>
@@ -498,10 +577,20 @@ print(torch.cuda.device_count())  # 显示可用GPU数量`} />
             />
 
             <h5 style={{
-              ...baseTextStyle,
+              display: 'block',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              lineHeight: '1.7',
+              color: uiConfig.colors.textBase,
+              margin: '0',
+              padding: '0',
+              visibility: 'visible',
+              opacity: '1',
+              height: 'auto',
+              width: '100%',
               margin: '1.25rem 0 0.75rem 0',
-              color: COLORS.dark,
-              fontSize: '1.1rem',
+              color: uiConfig.colors.dark,
+              fontSize: uiConfig.dimensions.headingFontSizeH5,
               fontWeight: 600
             }}>1.7.2 安装依赖</h5>
             <Paragraph>
@@ -536,23 +625,36 @@ pip install -e ".[torch,metrics]"`} />
           />
         </Collapsible>
 
+        {/* 分隔线 */}
         <div style={{
           height: '1px',
-          background: 'linear-gradient(90deg, transparent, #cbd5e1, transparent)',
-          margin: '2.5rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
         {/* 2. 模型微调 */}
-        <h2  id={generateHeadingId("2. 模型微调")}
+        <h2
+          id={generateHeadingId("2. 模型微调")}
           style={{
-          ...baseTextStyle,
-          margin: '2.5rem 0 1.25rem 0',
-          color: COLORS.dark,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.5rem',
-          fontWeight: 600
-        }}>
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.dark,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH2,
+            fontWeight: 600
+          }}
+        >
           2 模型微调
         </h2>
         <Paragraph>
@@ -658,7 +760,6 @@ resume_from_checkpoint: null`} />
             alt="使用nvidia-smi命令查看显卡状态"
           />
 
-
           <Paragraph>
             指定显卡和端口启动WebUI：
           </Paragraph>
@@ -686,13 +787,23 @@ resume_from_checkpoint: null`} />
             主要配置参数说明：
           </Paragraph>
           <ol style={{
-            ...baseTextStyle,
-            margin: '1rem 0 1rem 1.5rem',
-            paddingLeft: '1.5rem'
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.listMargin,
+            paddingLeft: uiConfig.dimensions.listPaddingLeft
           }}>
-            <li style={{ marginBottom: '0.5rem' }}>选择正确的模型名称和模型保存路径；</li>
-            <li style={{ marginBottom: '0.5rem' }}>选择训练类型：指令微调（SFT）或预训练微调（PreTraining）；</li>
-            <li style={{ marginBottom: '0.5rem' }}>选择数据集，确保格式与训练类型匹配；</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>选择正确的模型名称和模型保存路径；</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>选择训练类型：指令微调（SFT）或预训练微调（PreTraining）；</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>选择数据集，确保格式与训练类型匹配；</li>
             <li>调整训练轮数（通常3~30轮，损失率下降表示参数收敛）。</li>
           </ol>
 
@@ -708,10 +819,20 @@ resume_from_checkpoint: null`} />
 
         <Collapsible title="2.3 对话验证">
           <h5 style={{
-            ...baseTextStyle,
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
             margin: '1.25rem 0 0.75rem 0',
-            color: COLORS.dark,
-            fontSize: '1.1rem',
+            color: uiConfig.colors.dark,
+            fontSize: uiConfig.dimensions.headingFontSizeH5,
             fontWeight: 600
           }}>2.3.1 模型加载</h5>
           <Paragraph>
@@ -726,23 +847,36 @@ resume_from_checkpoint: null`} />
           </Paragraph>
         </Collapsible>
 
+        {/* 分隔线 */}
         <div style={{
           height: '1px',
-          background: 'linear-gradient(90deg, transparent, #cbd5e1, transparent)',
-          margin: '2.5rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
         {/* 3. 模型部署 */}
-        <h2 id={generateHeadingId("3. 模型部署")}
+        <h2
+          id={generateHeadingId("3. 模型部署")}
           style={{
-          ...baseTextStyle,
-          margin: '2.5rem 0 1.25rem 0',
-          color: COLORS.dark,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.5rem',
-          fontWeight: 600
-        }}>
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.dark,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH2,
+            fontWeight: 600
+          }}
+        >
           3 模型部署
         </h2>
         <Paragraph>
@@ -755,10 +889,20 @@ resume_from_checkpoint: null`} />
           </Paragraph>
 
           <h5 style={{
-            ...baseTextStyle,
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
             margin: '1.25rem 0 0.75rem 0',
-            color: COLORS.dark,
-            fontSize: '1.1rem',
+            color: uiConfig.colors.dark,
+            fontSize: uiConfig.dimensions.headingFontSizeH5,
             fontWeight: 600
           }}>3.1.1 可视化界面操作</h5>
           <ImageViewer
@@ -769,18 +913,28 @@ resume_from_checkpoint: null`} />
             上图是导出的操作界面，对于图中各步骤说明如下：
           </Paragraph>
           <ol style={{
-            ...baseTextStyle,
-            margin: '1rem 0 1rem 1.5rem',
-            paddingLeft: '1.5rem'
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.listMargin,
+            paddingLeft: uiConfig.dimensions.listPaddingLeft
           }}>
-            <li style={{ marginBottom: '0.5rem' }}>
-              <strong style={{ color: COLORS.dark }}>1. 选择基础模型路径</strong>：指定原始预训练模型的存放路径；
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <strong style={{ color: uiConfig.colors.dark }}>1. 选择基础模型路径</strong>：指定原始预训练模型的存放路径；
             </li>
-            <li style={{ marginBottom: '0.5rem' }}>
-              <strong style={{ color: COLORS.dark }}>2. 选择检查点路径</strong>：指定微调后增量参数的保存路径；
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <strong style={{ color: uiConfig.colors.dark }}>2. 选择检查点路径</strong>：指定微调后增量参数的保存路径；
             </li>
-            <li style={{ marginBottom: '0.5rem' }}>
-              <strong style={{ color: COLORS.dark }}>3. 加载模型并切换页签</strong>：先在<code style={{
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <strong style={{ color: uiConfig.colors.dark }}>3. 加载模型并切换页签</strong>：先在<code style={{
                 background: '#e2e8f0',
                 padding: '0.1rem 0.3rem',
                 borderRadius: '2px',
@@ -792,27 +946,37 @@ resume_from_checkpoint: null`} />
                 color: '#1e293b'
               }}>Export</code>页签；
             </li>
-            <li style={{ marginBottom: '0.5rem' }}>
-              <strong style={{ color: COLORS.dark }}>4. 选择导出设备</strong>：建议选<code style={{
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <strong style={{ color: uiConfig.colors.dark }}>4. 选择导出设备</strong>：建议选<code style={{
                 background: '#e2e8f0',
                 padding: '0.1rem 0.3rem',
                 borderRadius: '2px',
                 color: '#1e293b'
               }}>auto</code>以自动使用GPU加速；
             </li>
-            <li style={{ marginBottom: '0.5rem' }}>
-              <strong style={{ color: COLORS.dark }}>5. 指定导出目录</strong>：设置合并后模型的保存路径；
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>
+              <strong style={{ color: uiConfig.colors.dark }}>5. 指定导出目录</strong>：设置合并后模型的保存路径；
             </li>
             <li>
-              <strong style={{ color: COLORS.dark }}>6. 开始导出</strong>：点击“开始导出”，同时监控后台日志处理错误。
+              <strong style={{ color: uiConfig.colors.dark }}>6. 开始导出</strong>：点击“开始导出”，同时监控后台日志处理错误。
             </li>
           </ol>
 
           <h5 style={{
-            ...baseTextStyle,
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
             margin: '1.25rem 0 0.75rem 0',
-            color: COLORS.dark,
-            fontSize: '1.1rem',
+            color: uiConfig.colors.dark,
+            fontSize: uiConfig.dimensions.headingFontSizeH5,
             fontWeight: 600
           }}>3.1.2 手动编写脚本</h5>
           <CodeBlock language="bash" code={`llamafactory-cli export \\
@@ -823,7 +987,20 @@ resume_from_checkpoint: null`} />
     --export_dir path_to_export \\
     --export_size 2 \\
     --export_legacy_format False`} />
-          <p>
+          <p style={{
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            marginBottom: uiConfig.dimensions.paragraphMarginBottom
+          }}>
             合并模型保存在`/home/ubuntu/dbb_LLaMA-Factory/LLaMA-Factory/output`中：
           </p>
           <CodeBlock language="bash" code={`llamafactory-cli export \\
@@ -842,10 +1019,20 @@ resume_from_checkpoint: null`} />
 
         <Collapsible title="3.2 模型部署与测试">
           <h5 style={{
-            ...baseTextStyle,
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
             margin: '1.25rem 0 0.75rem 0',
-            color: COLORS.dark,
-            fontSize: '1.1rem',
+            color: uiConfig.colors.dark,
+            fontSize: uiConfig.dimensions.headingFontSizeH5,
             fontWeight: 600
           }}>3.2.1 开启服务端</h5>
           <Paragraph>
@@ -856,35 +1043,64 @@ resume_from_checkpoint: null`} />
             src="/Fig/LLaMA-Factory/image-20250808090524931.png"
             alt="开启服务端"
           />
+
           <h5 style={{
-            ...baseTextStyle,
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
             margin: '1.25rem 0 0.75rem 0',
-            color: COLORS.dark,
-            fontSize: '1.1rem',
+            color: uiConfig.colors.dark,
+            fontSize: uiConfig.dimensions.headingFontSizeH5,
             fontWeight: 600
           }}>3.2.2 开启客户端</h5>
           <Paragraph>
             测试部署的模型服务，使用curl命令发送测试请求：
           </Paragraph>
-          <CodeBlock language="bash" code={`curl http://127.0.0.1:8089/v1/completions   -H "Content-Type: application/json"   -d '{     "prompt": "hi",     "max_tokens": 7,     "temperature": 0`} />
-
+          <CodeBlock language="bash" code={`curl http://127.0.0.1:8089/v1/completions   -H "Content-Type: application/json"   -d '{     "prompt": "hi",     "max_tokens": 7,     "temperature": 0.7   }'`} />
           <ImageViewer
             src="/Fig/LLaMA-Factory/image-20250808090749766.png"
             alt="测试结果"
           />
         </Collapsible>
 
-        {/* 4 常见问题与解决方案 */}
-        <h2 id={generateHeadingId("4. 常见问题与解决方案")}
+        {/* 分隔线 */}
+        <div style={{
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
+        }}></div>
+
+        {/* 4. 常见问题与解决方案 */}
+        <h2
+          id={generateHeadingId("4. 常见问题与解决方案")}
           style={{
-          ...baseTextStyle,
-          margin: '2.5rem 0 1.25rem 0',
-          color: COLORS.dark,
-          borderLeft: `4px solid ${COLORS.primary}`,
-          paddingLeft: '0.75rem',
-          fontSize: '1.5rem',
-          fontWeight: 600
-        }}>
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.dark,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSizeH2,
+            fontWeight: 600
+          }}
+        >
           4 常见问题与解决方案
         </h2>
 
@@ -893,13 +1109,23 @@ resume_from_checkpoint: null`} />
             解决方案：
           </Paragraph>
           <ul style={{
-            ...baseTextStyle,
-            margin: '1rem 0 1rem 1.5rem',
-            paddingLeft: '1.5rem'
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.listMargin,
+            paddingLeft: uiConfig.dimensions.listPaddingLeft
           }}>
-            <li style={{ marginBottom: '0.5rem' }}>减小batch size（如将per_device_train_batch_size从2改为1）</li>
-            <li style={{ marginBottom: '0.5rem' }}>启用梯度累积（增大gradient_accumulation_steps）</li>
-            <li style={{ marginBottom: '0.5rem' }}>使用更小的模型（如从14B换成7B或更小）</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>减小batch size（如将per_device_train_batch_size从2改为1）</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>启用梯度累积（增大gradient_accumulation_steps）</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>使用更小的模型（如从14B换成7B或更小）</li>
             <li>启用量化训练（如load_in_4bit或load_in_8bit参数）</li>
           </ul>
           <CodeBlock language="yaml" code={`# 修改配置文件示例
@@ -913,13 +1139,23 @@ load_in_4bit: true`} />
             解决方案：
           </Paragraph>
           <ul style={{
-            ...baseTextStyle,
-            margin: '1rem 0 1rem 1.5rem',
-            paddingLeft: '1.5rem'
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.listMargin,
+            paddingLeft: uiConfig.dimensions.listPaddingLeft
           }}>
-            <li style={{ marginBottom: '0.5rem' }}>检查基础模型路径是否正确，确保模型文件完整</li>
-            <li style={{ marginBottom: '0.5rem' }}>确认LoRA检查点与基础模型匹配（同一模型的不同版本可能不兼容）</li>
-            <li style={{ marginBottom: '0.5rem' }}>尝试使用最新版本的LLaMA-Factory代码</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>检查基础模型路径是否正确，确保模型文件完整</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>确认LoRA检查点与基础模型匹配（同一模型的不同版本可能不兼容）</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>尝试使用最新版本的LLaMA-Factory代码</li>
             <li>合并时确保有足够的内存（合并14B模型需要至少32GB内存）</li>
           </ul>
         </Collapsible>
@@ -929,13 +1165,23 @@ load_in_4bit: true`} />
             解决方案：
           </Paragraph>
           <ul style={{
-            ...baseTextStyle,
-            margin: '1rem 0 1rem 1.5rem',
-            paddingLeft: '1.5rem'
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.7',
+            color: uiConfig.colors.textBase,
+            margin: '0',
+            padding: '0',
+            visibility: 'visible',
+            opacity: '1',
+            height: 'auto',
+            width: '100%',
+            margin: uiConfig.dimensions.listMargin,
+            paddingLeft: uiConfig.dimensions.listPaddingLeft
           }}>
-            <li style={{ marginBottom: '0.5rem' }}>确保CUDA和PyTorch版本兼容（推荐CUDA 11.7+）</li>
-            <li style={{ marginBottom: '0.5rem' }}>使用bf16或fp16混合精度训练</li>
-            <li style={{ marginBottom: '0.5rem' }}>增加batch size（在显存允许的情况下）</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>确保CUDA和PyTorch版本兼容（推荐CUDA 11.7+）</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>使用bf16或fp16混合精度训练</li>
+            <li style={{ marginBottom: uiConfig.dimensions.listItemMarginBottom }}>增加batch size（在显存允许的情况下）</li>
             <li>清理缓存或重启服务器释放碎片化显存</li>
           </ul>
           <CodeBlock language="bash" code={`# 清理GPU缓存

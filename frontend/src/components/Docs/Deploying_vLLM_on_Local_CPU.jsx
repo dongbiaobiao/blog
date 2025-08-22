@@ -1,6 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DocLayout from '../DocLayout';
 import { docs } from '../StudyDocs';
+// 导入精简后的UI配置（仅颜色/尺寸/控件）
+import uiConfig from './json/uiConfig.json';
+
+// 1. 组件内定义layout相关内容（原JSON中的layout节点）
+const DOC_TITLE = "本地CPU部署vLLM"; // 文档标题
+const TARGET_DOC_TITLE = "本地CPU部署vLLM"; // 目标文档名（用于匹配更新时间）
+const HEADINGS = [ // 目录标题列表
+  "1. 安装conda",
+  "2. 从源代码构建Wheel",
+  "3. 使用预构建的镜像",
+  "4. 模型下载",
+  "5. 模型推理-API调用推理",
+  "6. 模型推理-Python代码推理"
+];
 
 // 新增：统一ID生成函数，与DocLayout保持一致
 const generateHeadingId = (headingText) => {
@@ -9,28 +23,9 @@ const generateHeadingId = (headingText) => {
     .replace(/[^\w-]/g, '');
 };
 
-// 主题颜色配置
-const COLORS = {
-  primary: '#3b82f6',
-  secondary: '#64748b',
-  accent: '#10b981',
-  dark: '#1e293b',
-  light: '#f1f5f9',
-  body: '#334155',
-  heading: '#0f172a',
-  border: '#e2e8f0',
-  info: '#0ea5e9',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  success: '#10b981',
-  // 代码主题
-  codeBg: '#1e293b',
-  codeText: '#e2e8f0'
-};
-
-// 最后更新时间组件
+// 最后更新时间组件（使用组件内定义的TARGET_DOC_TITLE）
 const LastUpdatedTime = () => {
-  const vllmDoc = docs.find(doc => doc.title === '本地CPU部署vLLM');
+  const vllmDoc = docs.find(doc => doc.title === TARGET_DOC_TITLE);
   const lastUpdated = vllmDoc ? vllmDoc.lastUpdated : '未知';
 
   const formatDate = (dateString) => {
@@ -46,64 +41,67 @@ const LastUpdatedTime = () => {
   return (
     <div style={{
       textAlign: 'right',
-      color: COLORS.secondary,
+      color: uiConfig.colors.secondary,
       fontSize: '0.9rem',
-      marginBottom: '1.5rem',
+      marginBottom: uiConfig.dimensions.headingMargin,
       fontStyle: 'italic',
       padding: '0.5rem 0',
-      borderBottom: `1px solid ${COLORS.border}`
+      borderBottom: `1px solid ${uiConfig.colors.border}`
     }}>
       最后更新时间：{formatDate(lastUpdated)}
     </div>
   );
 };
 
-// 折叠面板组件
+// 折叠面板组件（仅用UI配置：颜色/尺寸/控件图标）
 const Collapsible = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <div style={{
-      margin: '1.5rem 0',
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: '6px',
+      margin: uiConfig.dimensions.collapsibleMargin,
+      border: `1px solid ${uiConfig.colors.border}`,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
       boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
       transition: 'all 0.3s ease'
     }}>
       <div
         style={{
-          padding: '1rem 1.25rem',
-          background: COLORS.light,
+          padding: uiConfig.dimensions.collapsibleHeaderPadding,
+          background: uiConfig.colors.light,
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           fontWeight: '600',
-          color: COLORS.heading,
-          borderRadius: '6px 6px 0 0',
+          color: uiConfig.colors.heading,
+          borderRadius: `${uiConfig.dimensions.codeBlockBorderRadius} ${uiConfig.dimensions.codeBlockBorderRadius} 0 0`,
           transition: 'background 0.2s ease'
         }}
         onClick={() => setIsOpen(!isOpen)}
         onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
-        onMouseOut={(e) => e.currentTarget.style.background = COLORS.light}
+        onMouseOut={(e) => e.currentTarget.style.background = uiConfig.colors.light}
       >
         <span>{title}</span>
         <span style={{
           transition: 'transform 0.3s ease',
-          color: COLORS.primary,
+          color: uiConfig.colors.primary,
           fontWeight: 'bold'
         }}>
-          {isOpen ? '−' : '+'}
+          {isOpen ? uiConfig.controls.collapsibleIcons.open : uiConfig.controls.collapsibleIcons.close}
         </span>
       </div>
       <div
         style={{
-          maxHeight: isOpen ? '2000px' : '0',
+          maxHeight: isOpen ? uiConfig.controls.collapsibleMaxHeightOpen : uiConfig.controls.collapsibleMaxHeightClose,
           overflow: 'hidden',
           transition: 'max-height 0.5s ease',
-          borderTop: isOpen ? `1px solid ${COLORS.border}` : 'none'
+          borderTop: isOpen ? `1px solid ${uiConfig.colors.border}` : 'none'
         }}
       >
-        <div style={{ padding: '1.25rem', backgroundColor: 'white' }}>
+        <div style={{
+          padding: uiConfig.dimensions.collapsibleContentPadding,
+          backgroundColor: 'white'
+        }}>
           {Array.isArray(children) ? children : [children]}
         </div>
       </div>
@@ -111,66 +109,66 @@ const Collapsible = ({ title, children }) => {
   );
 };
 
-// 提示框组件
+// 提示框组件（仅用UI配置：颜色/尺寸/控件图标）
 const TipBox = ({ type = 'info', children }) => {
   const styles = {
     info: {
       background: '#eff6ff',
-      borderLeft: `4px solid ${COLORS.info}`,
+      borderLeft: `4px solid ${uiConfig.colors.info}`,
       color: '#0369a1'
     },
     warning: {
       background: '#fffbeb',
-      borderLeft: `4px solid ${COLORS.warning}`,
+      borderLeft: `4px solid ${uiConfig.colors.warning}`,
       color: '#b45309'
     },
     danger: {
       background: '#fee2e2',
-      borderLeft: `4px solid ${COLORS.danger}`,
+      borderLeft: `4px solid ${uiConfig.colors.danger}`,
       color: '#b91c1c'
     }
-  };
-
-  const icons = {
-    info: 'ℹ️',
-    warning: '⚠️',
-    danger: '❌'
   };
 
   return (
     <div style={{
       ...styles[type],
-      padding: '1rem 1.25rem',
-      margin: '1.25rem 0',
-      borderRadius: '6px',
+      padding: uiConfig.dimensions.tipBoxPadding,
+      margin: uiConfig.dimensions.tipBoxMargin,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
       display: 'flex',
       alignItems: 'flex-start',
-      gap: '0.75rem'
+      gap: uiConfig.dimensions.tipBoxGap
     }}>
-      <div style={{ fontSize: '1.25rem', marginTop: '0.1rem' }}>{icons[type]}</div>
-      <div style={{ lineHeight: '1.7', whiteSpace: 'normal' }}>
+      <div style={{
+        fontSize: '1.25rem',
+        marginTop: '0.1rem'
+      }}>{uiConfig.controls.tipBoxIcons[type]}</div>
+      <div style={{
+        lineHeight: '1.7',
+        whiteSpace: 'normal'
+      }}>
         {typeof children === 'string' ? <span>{children}</span> : children}
       </div>
     </div>
   );
 };
 
-// 图片组件
+// 图片组件（仅用UI配置：颜色/尺寸/布局）
 const ImageViewer = ({ src, alt, style }) => {
   return (
     <div style={{
       ...style,
       textAlign: 'center',
-      margin: '1.5rem 0',
+      margin: uiConfig.dimensions.imageViewerMargin,
       display: 'flex',
       justifyContent: 'center'
     }}>
       <div style={{
-        padding: '0.75rem',
+        padding: uiConfig.dimensions.imageViewerPadding,
         backgroundColor: 'white',
-        borderRadius: '8px',
+        borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        border: `1px solid ${COLORS.border}`,
+        border: `1px solid ${uiConfig.colors.border}`,
         maxWidth: '100%'
       }}>
         <img
@@ -178,15 +176,15 @@ const ImageViewer = ({ src, alt, style }) => {
           alt={alt}
           style={{
             maxWidth: '100%',
-            maxHeight: '600px',
-            borderRadius: '4px'
+            maxHeight: uiConfig.dimensions.imageViewerMaxHeight,
+            borderRadius: uiConfig.dimensions.codeBlockBorderRadius
           }}
           loading="lazy"
         />
         <div style={{
-          marginTop: '0.75rem',
+          marginTop: uiConfig.dimensions.imageViewerPadding,
           fontSize: '0.9rem',
-          color: COLORS.secondary,
+          color: uiConfig.colors.secondary,
           fontStyle: 'italic'
         }}>
           {alt}
@@ -196,9 +194,9 @@ const ImageViewer = ({ src, alt, style }) => {
   );
 };
 
-// 代码框组件 - 修复版
+// 代码框组件（仅用UI配置：颜色/尺寸/控件文案/超时时间）
 const CodeBlock = ({ language, code }) => {
-  const [buttonText, setButtonText] = useState('复制代码');
+  const [buttonText, setButtonText] = useState(uiConfig.controls.copyButtonTexts.default);
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef(null);
 
@@ -207,20 +205,20 @@ const CodeBlock = ({ language, code }) => {
     const codeText = typeof code === 'string' ? code.trim() : '';
     navigator.clipboard.writeText(codeText)
       .then(() => {
-        setButtonText('已复制');
+        setButtonText(uiConfig.controls.copyButtonTexts.copied);
         setCopied(true);
 
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
         timeoutRef.current = setTimeout(() => {
-          setButtonText('复制代码');
+          setButtonText(uiConfig.controls.copyButtonTexts.default);
           setCopied(false);
-        }, 3000);
+        }, uiConfig.controls.copyTimeout);
       })
       .catch(err => {
         console.error('复制失败:', err);
-        setButtonText('复制失败');
-        setTimeout(() => setButtonText('复制代码'), 2000);
+        setButtonText(uiConfig.controls.copyButtonTexts.failed);
+        setTimeout(() => setButtonText(uiConfig.controls.copyButtonTexts.default), uiConfig.controls.failedTimeout);
       });
   };
 
@@ -230,24 +228,18 @@ const CodeBlock = ({ language, code }) => {
     };
   }, []);
 
-  const languageMap = {
-    'bash': 'Bash 命令',
-    'python': 'Python 代码',
-    'yaml': 'YAML 配置'
-  };
-
   return (
     <div style={{
-      backgroundColor: COLORS.codeBg,
-      borderRadius: '6px',
-      margin: '1rem 0 1.5rem 0',
+      backgroundColor: uiConfig.colors.codeBg,
+      borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
+      margin: uiConfig.dimensions.codeBlockMargin,
       overflow: 'hidden',
       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
     }}>
       <div style={{
-        padding: '0.85rem 1.25rem',
-        fontSize: '0.85rem',
-        color: COLORS.codeText,
+        padding: uiConfig.dimensions.codeHeaderPadding,
+        fontSize: uiConfig.dimensions.codeHeaderFontSize,
+        color: uiConfig.colors.codeText,
         borderBottom: '1px solid #334155',
         display: 'flex',
         justifyContent: 'space-between',
@@ -255,24 +247,24 @@ const CodeBlock = ({ language, code }) => {
         position: 'sticky',
         top: 0,
         zIndex: 10,
-        background: '#0f172a',
+        background: uiConfig.colors.dark,
       }}>
         <span style={{ fontWeight: '500' }}>
-          {languageMap[language] || language}
+          {uiConfig.controls.languageMap[language] || language}
         </span>
         <button
           style={{
-            background: copied ? COLORS.success : '#334155',
+            background: copied ? uiConfig.colors.success : '#334155',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
-            padding: '0.35rem 0.75rem',
+            borderRadius: uiConfig.dimensions.codeBlockBorderRadius,
+            padding: uiConfig.dimensions.copyButtonPadding,
             cursor: 'pointer',
-            fontSize: '0.8rem',
+            fontSize: uiConfig.dimensions.copyButtonFontSize,
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.35rem'
+            gap: uiConfig.dimensions.copyButtonGap
           }}
           onClick={handleCopy}
         >
@@ -281,17 +273,17 @@ const CodeBlock = ({ language, code }) => {
         </button>
       </div>
       <div style={{
-        maxHeight: '500px',
+        maxHeight: uiConfig.controls.codeMaxHeight,
         overflow: 'auto'
       }}>
         <pre style={{ margin: 0 }}>
           <code style={{
-            padding: '1.25rem',
+            padding: uiConfig.dimensions.codeContentPadding,
             display: 'block',
             fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace',
-            fontSize: '0.9rem',
-            lineHeight: '1.6',
-            color: COLORS.codeText,
+            fontSize: uiConfig.dimensions.codeContentFontSize,
+            lineHeight: uiConfig.dimensions.codeContentLineHeight,
+            color: uiConfig.colors.codeText,
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-all'
           }}>
@@ -305,20 +297,10 @@ const CodeBlock = ({ language, code }) => {
 
 const Deploying_vLLM_on_Local_CPU = () => {
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: uiConfig.controls.scrollBehavior });
   }, []);
 
-  // 定义文章小标题列表（用于生成目录）
-  const headings = [
-    "1. 安装conda",
-    "2. 从源代码构建Wheel",
-    "3. 使用预构建的镜像",
-    "4. 模型下载",
-    "5. 模型推理-API调用推理",
-    "6. 模型推理-Python代码推理"
-  ];
-
-  // 所有代码内容
+  // 代码内容保留在组件内
   const installCondaCode = `# 下载Anaconda安装包
 wget -P download_dir https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh
 
@@ -425,23 +407,23 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker`;
 
   return (
-    // 将标题列表传递给DocLayout组件
-    <DocLayout title="本地CPU部署vLLM" headings={headings}>
+    // 传递组件内定义的文档标题和目录列表
+    <DocLayout title={DOC_TITLE} headings={HEADINGS}>
       <div style={{
-        maxWidth: '1000px',
+        maxWidth: uiConfig.dimensions.containerMaxWidth,
         margin: '0 auto',
-        padding: '0 1.5rem',
-        color: COLORS.body,
+        padding: uiConfig.dimensions.containerPadding,
+        color: uiConfig.colors.body,
         lineHeight: '1.8',
         whiteSpace: 'normal'
       }}>
-
+        {/* 文档说明文本（保留在组件内） */}
         <div style={{
           background: '#f8fafc',
-          borderLeft: `4px solid ${COLORS.accent}`,
-          padding: '1rem 1.25rem',
-          marginBottom: '2rem',
-          borderRadius: '0 6px 6px 0',
+          borderLeft: `4px solid ${uiConfig.colors.accent}`,
+          padding: uiConfig.dimensions.tipBoxPadding,
+          marginBottom: uiConfig.dimensions.sectionMargin,
+          borderRadius: `0 ${uiConfig.dimensions.codeBlockBorderRadius} ${uiConfig.dimensions.codeBlockBorderRadius} 0`,
           whiteSpace: 'normal'
         }}>
           <p style={{
@@ -456,19 +438,19 @@ sudo systemctl restart docker`;
           </p>
         </div>
 
-        {/* 1. 安装conda - 新增id属性 */}
+        {/* 1. 安装conda（标题样式用UI配置，文本保留在组件内） */}
         <h3
           id={generateHeadingId("1. 安装conda")}
           style={{
-            margin: '2rem 0 1.25rem 0',
-            color: COLORS.primary,
-            borderLeft: `4px solid ${COLORS.primary}`,
-            paddingLeft: '0.75rem',
-            fontSize: '1.4rem',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSize,
             fontWeight: '600'
           }}
         >1. 安装conda</h3>
-        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
+        <p style={{ marginBottom: uiConfig.dimensions.headingMargin, whiteSpace: 'normal' }}>
           使用conda创建独立的Python环境，避免依赖冲突。
         </p>
 
@@ -497,26 +479,26 @@ conda activate vllm`} />
           />
         </Collapsible>
 
-        {/* 分隔线 */}
+        {/* 分隔线（样式用UI配置） */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
-        {/* 2. 从源代码构建Wheel - 新增id属性 */}
+        {/* 2. 从源代码构建Wheel（后续章节结构一致，不再重复注释） */}
         <h3
           id={generateHeadingId("2. 从源代码构建Wheel")}
           style={{
-            margin: '2rem 0 1.25rem 0',
-            color: COLORS.primary,
-            borderLeft: `4px solid ${COLORS.primary}`,
-            paddingLeft: '0.75rem',
-            fontSize: '1.4rem',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSize,
             fontWeight: '600'
           }}
         >2. 从源代码构建Wheel</h3>
-        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
+        <p style={{ marginBottom: uiConfig.dimensions.headingMargin, whiteSpace: 'normal' }}>
           通过源码编译方式安装vLLM的CPU版本，需要先安装必要的编译工具。
         </p>
 
@@ -553,26 +535,25 @@ conda activate vllm`} />
           />
         </Collapsible>
 
-        {/* 后续章节内容保持不变 */}
+        {/* 3. 使用预构建的镜像 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
-        {/* 3. 使用预构建的镜像 - 新增id属性 */}
         <h3
           id={generateHeadingId("3. 使用预构建的镜像")}
           style={{
-            margin: '2rem 0 1.25rem 0',
-            color: COLORS.primary,
-            borderLeft: `4px solid ${COLORS.primary}`,
-            paddingLeft: '0.75rem',
-            fontSize: '1.4rem',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSize,
             fontWeight: '600'
           }}
         >3. 使用预构建的镜像</h3>
-        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
+        <p style={{ marginBottom: uiConfig.dimensions.headingMargin, whiteSpace: 'normal' }}>
           如果不想从源码编译，可以直接使用预构建的Docker镜像，简化安装流程。
         </p>
 
@@ -595,29 +576,29 @@ conda activate vllm`} />
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805151234827.png"
             alt="镜像重命名后的显示"
           />
-            <p style={{ whiteSpace: 'normal' }}>若Docker拉取速度慢，可配置国内镜像源加速：</p>
-            <CodeBlock language="bash" code={dockerMirrorConfigCode} />
+          <p style={{ whiteSpace: 'normal' }}>若Docker拉取速度慢，可配置国内镜像源加速：</p>
+          <CodeBlock language="bash" code={dockerMirrorConfigCode} />
         </Collapsible>
 
-        {/* 4. 模型下载 - 新增id属性 */}
+        {/* 4. 模型下载 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
         <h3
           id={generateHeadingId("4. 模型下载")}
           style={{
-            margin: '2rem 0 1.25rem 0',
-            color: COLORS.primary,
-            borderLeft: `4px solid ${COLORS.primary}`,
-            paddingLeft: '0.75rem',
-            fontSize: '1.4rem',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSize,
             fontWeight: '600'
           }}
         >4. 模型下载</h3>
-        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
+        <p style={{ marginBottom: uiConfig.dimensions.headingMargin, whiteSpace: 'normal' }}>
           下载Qwen2-0.5B-Instruct模型到本地目录，用于后续部署和推理。
         </p>
 
@@ -636,35 +617,32 @@ modelscope download --model Qwen/Qwen2-0.5B-Instruct --local_dir ./Qwen2-0.5B-In
         {/* 5. 模型推理-API调用推理 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
         <h3
           id={generateHeadingId("5. 模型推理-API调用推理")}
           style={{
-            margin: '2rem 0 1.25rem 0',
-            color: COLORS.primary,
-            borderLeft: `4px solid ${COLORS.primary}`,
-            paddingLeft: '0.75rem',
-            fontSize: '1.4rem',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSize,
             fontWeight: '600'
           }}
         >5. 模型推理-API调用推理</h3>
-        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
-
+        <p style={{ marginBottom: uiConfig.dimensions.headingMargin, whiteSpace: 'normal' }}>
           <TipBox type="info">
             <p style={{ whiteSpace: 'normal' }}>
-              **工作流程**：<br/>
+              <strong>工作流程</strong>：<br/>
               1. 在5.1中，先运行第一条命令启动 vLLM 服务（服务器会一直运行等待请求）<br/>
               2. 在5.2中，再在另一个终端运行第二条命令发送提问（客户端请求）<br/>
               3. 服务器收到请求后，用加载的 Qwen 模型计算回答并返回<br/>
               4. 客户端接收并显示回答<br/>
             </p>
           </TipBox>
-
         </p>
-
 
         <Collapsible title="5.1 启动服务端">
           <p style={{ whiteSpace: 'normal' }}>使用Docker命令启动vLLM服务，映射模型目录和端口：</p>
@@ -686,7 +664,6 @@ modelscope download --model Qwen/Qwen2-0.5B-Instruct --local_dir ./Qwen2-0.5B-In
         <Collapsible title="5.2 启动客户端">
           <CodeBlock language="bash" code={`curl -s http://localhost:8000/v1/chat/completions   -H "Content-Type: application/json"   -d '{"model":"/model","messages":[{"role":"user","content":"我的名字是"}]}'   | jq -r
 '.choices[0].message.content'`} />
-
           <TipBox type="info">
             <p style={{ whiteSpace: 'normal' }}>
               - 通过 HTTP POST 请求访问本地 8000 端口的 v1/chat/completions 接口。<br />
@@ -701,7 +678,6 @@ modelscope download --model Qwen/Qwen2-0.5B-Instruct --local_dir ./Qwen2-0.5B-In
         </Collapsible>
 
         <Collapsible title="5.3 结果分析">
-
           <TipBox type="info">
             <p style={{ whiteSpace: 'normal' }}>
               - `Avg prompt throughput: 1.1 tokens/s`：提示词处理平均速度（每秒处理 1.1 个 token）。<br />
@@ -717,22 +693,22 @@ modelscope download --model Qwen/Qwen2-0.5B-Instruct --local_dir ./Qwen2-0.5B-In
         {/* 6. 模型推理-Python代码推理 */}
         <div style={{
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${COLORS.border}, transparent)`,
-          margin: '2rem 0'
+          background: `linear-gradient(90deg, transparent, ${uiConfig.colors.border}, transparent)`,
+          margin: uiConfig.dimensions.separatorMargin
         }}></div>
 
         <h3
           id={generateHeadingId("6. 模型推理-Python代码推理")}
           style={{
-            margin: '2rem 0 1.25rem 0',
-            color: COLORS.primary,
-            borderLeft: `4px solid ${COLORS.primary}`,
-            paddingLeft: '0.75rem',
-            fontSize: '1.4rem',
+            margin: uiConfig.dimensions.headingMargin,
+            color: uiConfig.colors.primary,
+            borderLeft: `4px solid ${uiConfig.colors.primary}`,
+            paddingLeft: uiConfig.dimensions.headingPaddingLeft,
+            fontSize: uiConfig.dimensions.headingFontSize,
             fontWeight: '600'
           }}
         >6. 模型推理-Python代码推理</h3>
-        <p style={{ marginBottom: '1.25rem', whiteSpace: 'normal' }}>
+        <p style={{ marginBottom: uiConfig.dimensions.headingMargin, whiteSpace: 'normal' }}>
           `LLM`类提供了主要的 Python 接口，用于离线推理，即在不使用独立推理服务器的情况下与模型交互。
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805153312450.png"
@@ -752,39 +728,36 @@ modelscope download --model Qwen/Qwen2-0.5B-Instruct --local_dir ./Qwen2-0.5B-In
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805141947293.png"
             alt="Python代码推理结果"
           />
-
           <TipBox type="info">
-             <p style={{ whiteSpace: 'normal' }}>
+            <p style={{ whiteSpace: 'normal' }}>
               - 输入`"Hello, my name is"`，输出续写了名字和背景；<br />
               - 输入`"The capital of France is"`，输出中包含正确答案`"Paris"`。
             </p>
           </TipBox>
-
           <p style={{ whiteSpace: 'normal' }}>重新运行，修改测试样例:</p>
           <ImageViewer
             src="/Fig/Deploying_vLLM_on_Local_CPU/image-20250805142633563.png"
             alt="Python代码推理结果"
           />
-
           <TipBox type="info">
-             <p style={{ whiteSpace: 'normal' }}>
+            <p style={{ whiteSpace: 'normal' }}>
               - 输入 “请介绍一下人工智能的应用领域”，输出开始列举多行业；<br />
               - 输入 “写一首关于秋天的短诗”，输出答案包含“主题”的诗句。
             </p>
           </TipBox>
-
         </Collapsible>
 
+        {/* 总结 */}
         <div style={{
-          marginTop: '3rem',
-          padding: '1.5rem',
+          marginTop: uiConfig.dimensions.sectionMargin,
+          padding: uiConfig.dimensions.summaryPadding,
           background: '#f8fafc',
-          borderRadius: '8px',
-          border: `1px solid ${COLORS.border}`
+          borderRadius: uiConfig.dimensions.summaryBorderRadius,
+          border: `1px solid ${uiConfig.colors.border}`
         }}>
           <h4 style={{
             margin: '0 0 1rem 0',
-            color: COLORS.heading,
+            color: uiConfig.colors.heading,
             fontSize: '1.1rem'
           }}>总结</h4>
           <p style={{ margin: '0', whiteSpace: 'normal' }}>
