@@ -1,0 +1,75 @@
+{
+  "colors": {
+    "primary": "#3b82f6",
+    "secondary": "#64748b",
+    "accent": "#10b981",
+    "dark": "#1e293b",
+    "light": "#f1f5f9",
+    "body": "#334155",
+    "heading": "#0f172a",
+    "border": "#e2e8f0",
+    "info": "#0ea5e9",
+    "warning": "#f59e0b",
+    "danger": "#ef4444",
+    "success": "#10b981",
+    "codeBg": "#1e293b",
+    "codeText": "#e2e8f0"
+  },
+  "dimensions": {
+    "containerMaxWidth": "1000px",
+    "containerPadding": "0 1.5rem",
+    "sectionMargin": "2rem 0",
+    "headingMargin": "2rem 0 1.25rem 0",
+    "headingPaddingLeft": "0.75rem",
+    "headingFontSize": "1.4rem",
+    "codeBlockMargin": "1rem 0 1.5rem 0",
+    "codeBlockBorderRadius": "6px",
+    "codeHeaderPadding": "0.85rem 1.25rem",
+    "codeHeaderFontSize": "0.85rem",
+    "codeContentPadding": "1.25rem",
+    "codeContentFontSize": "0.9rem",
+    "codeContentLineHeight": "1.6",
+    "copyButtonPadding": "0.35rem 0.75rem",
+    "copyButtonFontSize": "0.8rem",
+    "copyButtonGap": "0.35rem",
+    "imageViewerMargin": "1.5rem 0",
+    "imageViewerPadding": "0.75rem",
+    "imageViewerMaxHeight": "600px",
+    "collapsibleMargin": "1.5rem 0",
+    "collapsibleHeaderPadding": "1rem 1.25rem",
+    "collapsibleContentPadding": "1.25rem",
+    "tipBoxMargin": "1.25rem 0",
+    "tipBoxPadding": "1rem 1.25rem",
+    "tipBoxGap": "0.75rem",
+    "separatorMargin": "2rem 0",
+    "summaryPadding": "1.5rem",
+    "summaryBorderRadius": "8px"
+  },
+  "controls": {
+    "languageMap": {
+      "bash": "Bash 命令",
+      "python": "Python 代码",
+      "yaml": "YAML 配置"
+    },
+    "copyButtonTexts": {
+      "default": "复制代码",
+      "copied": "已复制",
+      "failed": "复制失败"
+    },
+    "tipBoxIcons": {
+      "info": "ℹ️",
+      "warning": "⚠️",
+      "danger": "❌"
+    },
+    "collapsibleIcons": {
+      "open": "−",
+      "close": "+"
+    },
+    "scrollBehavior": "smooth",
+    "codeMaxHeight": "500px",
+    "collapsibleMaxHeightOpen": "2000px",
+    "collapsibleMaxHeightClose": "0",
+    "copyTimeout": 3000,
+    "failedTimeout": 2000
+  }
+}
